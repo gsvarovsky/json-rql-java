@@ -1,0 +1,73 @@
+package org.jsonrql;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import java.io.IOException;
+
+import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
+import static org.jsonrql.Jrql.badToken;
+
+@JsonDeserialize(using = VariableAssignment.Deserializer.class)
+@JsonSerialize(using = VariableAssignment.Serializer.class)
+public final class VariableAssignment implements Result
+{
+    private final Variable variable;
+    private final Expression expression;
+
+    public VariableAssignment(Variable variable, Expression expression)
+    {
+        this.variable = variable;
+        this.expression = expression;
+    }
+
+    @Override
+    public void accept(Visitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    public Variable variable()
+    {
+        return variable;
+    }
+
+    public Expression expression()
+    {
+        return expression;
+    }
+
+    public static class Deserializer extends JsonDeserializer<VariableAssignment>
+    {
+        @Override
+        public VariableAssignment deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
+        {
+            switch (p.getCurrentToken())
+            {
+                case VALUE_STRING:
+                    final Variable variable = ctxt.readValue(p, Variable.class);
+                    return new VariableAssignment(variable, variable);
+
+                default:
+                    throw badToken(p, VALUE_STRING);
+            }
+        }
+    }
+
+    public static class Serializer extends JsonSerializer<VariableAssignment>
+    {
+        @Override
+        public void serialize(VariableAssignment value, JsonGenerator gen,
+                              SerializerProvider serializers) throws IOException
+        {
+            if (value.variable().equals(value.expression()))
+                gen.writeObject(value.variable());
+        }
+    }
+}
