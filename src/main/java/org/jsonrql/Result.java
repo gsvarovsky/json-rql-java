@@ -29,7 +29,7 @@ public interface Result extends Jrql
             return "*";
         }
     }
-    Result STAR = new Star();
+    public Result STAR = new Star();
 
     class Deserializer extends JsonDeserializer<Result>
     {

@@ -9,7 +9,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFParser;
 import org.apache.jena.sparql.core.BasicPattern;
-import org.apache.jena.sparql.syntax.ElementTriplesBlock;
+import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.jsonrql.Jrql;
 import org.jsonrql.Result.Star;
 import org.jsonrql.Variable;
@@ -21,9 +22,9 @@ import static org.apache.jena.riot.Lang.JSONLD;
 import static org.jsonrql.Variable.hideVars;
 import static org.jsonrql.Variable.isHiddenVar;
 
-public interface JenaQueryFactory
+public interface JsonRqlJena
 {
-    static Query toSparql(org.jsonrql.Query jrqlQuery) throws IOException
+    static Query toSparql(org.jsonrql.Query jrqlQuery)
     {
         final Query query = new Query();
         jrqlQuery.select().ifPresent(select -> {
@@ -43,9 +44,18 @@ public interface JenaQueryFactory
                 }
             }));
         });
-        final String jsonLd = JsonUtils.toString(hideVars(jrqlQuery.where()));
-        query.setQueryPattern(new ElementTriplesBlock(toPattern(toModel(jsonLd))));
-        return query;
+        try
+        {
+            final String jsonLd = JsonUtils.toString(hideVars(jrqlQuery.where()));
+            final ElementGroup group = new ElementGroup();
+            group.addElement(new ElementPathBlock(toPattern(toModel(jsonLd))));
+            query.setQueryPattern(group);
+            return query;
+        }
+        catch (IOException e)
+        {
+            throw new AssertionError(); // Must be something seriously wrong with json-rql itself
+        }
     }
 
     static Model toModel(String jsonLd)

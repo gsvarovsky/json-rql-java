@@ -99,7 +99,7 @@ public final class Variable implements Expression
         {
             //noinspection unchecked
             return ((Map<String, ?>) value).entrySet().stream().collect(toMap(
-                e -> hideVars(e.getKey()), e -> e.getValue() instanceof Map || !e.getKey().startsWith("@") ?
+                e -> hideVar(e.getKey()), e -> e.getValue() instanceof Map || !e.getKey().startsWith("@") ?
                     hideVars(e.getValue()) : hideVar(e.getValue())));
         }
         else if (matchVar(value).isPresent())

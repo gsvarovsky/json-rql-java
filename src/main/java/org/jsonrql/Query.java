@@ -12,18 +12,26 @@ import java.util.Optional;
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY;
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 
 public final class Query implements Jrql
 {
     private final List<Result> select;
     private final List<Map> where;
 
+    public Query()
+    {
+        this(null, emptyList());
+    }
+
     public Query(
         @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) @JsonProperty("@select") List<Result> select,
         @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) @JsonProperty("@where") List<Map> where)
     {
-        this.select = select;
-        this.where = where;
+        this.select = select == null ? null : unmodifiableList(select);
+        this.where = unmodifiableList(where);
     }
 
     @Override
@@ -51,5 +59,15 @@ public final class Query implements Jrql
     public List<Map> where()
     {
         return where;
+    }
+
+    public Query select(Result... select)
+    {
+        return new Query(asList(select), where);
+    }
+
+    public Query where(Map... where)
+    {
+        return new Query(select, asList(where));
     }
 }
