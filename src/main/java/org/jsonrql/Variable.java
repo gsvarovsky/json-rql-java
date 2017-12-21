@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,14 +16,12 @@ import java.util.regex.Pattern;
 
 import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
 import static java.util.Collections.singletonMap;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static org.jsonrql.Jrql.badMapping;
 import static org.jsonrql.Jrql.badToken;
 
 @JsonDeserialize(using = Variable.Deserializer.class)
 @JsonSerialize(using = ToStringSerializer.class)
-public final class Variable implements Expression
+public final class Variable implements Id
 {
     private static String HIDDEN_VAR_PREFIX = "http://json-rql.org/var#";
     private static Pattern VAR_PATTERN = Pattern.compile("\\?([\\d\\w]+)");
@@ -50,7 +47,14 @@ public final class Variable implements Expression
         return name;
     }
 
-    private Object asHidden()
+    @Override
+    public Map asJsonLd()
+    {
+        return singletonMap("@id", asIRI());
+    }
+
+    @Override
+    public String asIRI()
     {
         return HIDDEN_VAR_PREFIX + name;
     }
@@ -84,34 +88,6 @@ public final class Variable implements Expression
             .map(VAR_PATTERN::matcher).filter(Matcher::matches).map(match -> new Variable(match.group(1)));
     }
 
-    private static Object hideVar(Object value)
-    {
-        return matchVar(value).map(Variable::asHidden).orElse(value);
-    }
-
-    public static Object hideVars(Object value)
-    {
-        if (value instanceof List)
-        {
-            return ((List<?>) value).stream().map(Variable::hideVars).collect(toList());
-        }
-        else if (value instanceof Map)
-        {
-            //noinspection unchecked
-            return ((Map<String, ?>) value).entrySet().stream().collect(toMap(
-                e -> hideVar(e.getKey()), e -> e.getValue() instanceof Map || !e.getKey().startsWith("@") ?
-                    hideVars(e.getValue()) : hideVar(e.getValue())));
-        }
-        else if (matchVar(value).isPresent())
-        {
-            return singletonMap("@id", hideVar(value));
-        }
-        else
-        {
-            return value;
-        }
-    }
-
     public static boolean isHiddenVar(String value)
     {
         return value.startsWith(HIDDEN_VAR_PREFIX);
@@ -130,6 +106,7 @@ public final class Variable implements Expression
             switch (p.getCurrentToken())
             {
                 case VALUE_STRING:
+                case FIELD_NAME:
                     return matchVar(p.getText()).orElseThrow(() -> badMapping(p, "Not a variable"));
 
                 default:

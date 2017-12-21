@@ -12,6 +12,7 @@ import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.jsonrql.Jrql;
+import org.jsonrql.PatternObject;
 import org.jsonrql.Result.Star;
 import org.jsonrql.Variable;
 import org.jsonrql.VariableAssignment;
@@ -19,7 +20,6 @@ import org.jsonrql.VariableAssignment;
 import java.io.IOException;
 
 import static org.apache.jena.riot.Lang.JSONLD;
-import static org.jsonrql.Variable.hideVars;
 import static org.jsonrql.Variable.isHiddenVar;
 
 public interface JsonRqlJena
@@ -44,18 +44,25 @@ public interface JsonRqlJena
                 }
             }));
         });
-        try
+        final ElementGroup group = new ElementGroup(); // Jena always has a group at top level
+        jrqlQuery.where().forEach(pattern -> pattern.accept(new Jrql.Visitor()
         {
-            final String jsonLd = JsonUtils.toString(hideVars(jrqlQuery.where()));
-            final ElementGroup group = new ElementGroup();
-            group.addElement(new ElementPathBlock(toPattern(toModel(jsonLd))));
-            query.setQueryPattern(group);
-            return query;
-        }
-        catch (IOException e)
-        {
-            throw new AssertionError(); // Must be something seriously wrong with json-rql itself
-        }
+            @Override
+            public void visit(PatternObject patternObject)
+            {
+                try
+                {
+                    final String jsonLd = JsonUtils.toString(patternObject.asJsonLd());
+                    group.addElement(new ElementPathBlock(toPattern(toModel(jsonLd))));
+                }
+                catch (IOException e)
+                {
+                    throw new AssertionError(); // Must be something seriously wrong with json-rql itself
+                }
+            }
+        }));
+        query.setQueryPattern(group);
+        return query;
     }
 
     static Model toModel(String jsonLd)

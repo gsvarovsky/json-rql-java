@@ -5,16 +5,8 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import org.jsonrql.Result.Star;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 public interface Jrql
 {
@@ -24,6 +16,9 @@ public interface Jrql
         default void visit(Query query) {}
         default void visit(VariableAssignment variableAssignment) {}
         default void visit(Variable variable) {}
+        default void visit(PatternObject patternObject) {}
+        default void visit(Name name) {}
+        default void visit(Text text) {}
     }
 
     void accept(Visitor visitor);

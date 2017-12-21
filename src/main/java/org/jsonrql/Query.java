@@ -1,13 +1,12 @@
 package org.jsonrql;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY;
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED;
@@ -16,19 +15,41 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
-public final class Query implements Jrql
+@JsonDeserialize
+public final class Query implements Pattern
 {
-    private final List<Result> select;
-    private final List<Map> where;
+    public static Query JRQL = new Query(null, emptyList());
+    public static Set<String> CLAUSES = new HashSet<>(asList(
+        "@construct",
+        "@select",
+        "@describe",
+        "@distinct",
+        "@where",
+        "@orderBy",
+        "@groupBy",
+        "@having",
+        "@limit",
+        "@offset",
+        "@values"
+    ));
 
-    public Query()
+    private final List<Result> select;
+    private final List<Pattern> where;
+
+    public Query select(Result... select)
     {
-        this(null, emptyList());
+        return new Query(asList(select), where);
     }
 
-    public Query(
+    public Query where(Pattern... where)
+    {
+        return new Query(select, asList(where));
+    }
+
+    @JsonCreator
+    private Query(
         @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) @JsonProperty("@select") List<Result> select,
-        @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) @JsonProperty("@where") List<Map> where)
+        @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) @JsonProperty("@where") List<Pattern> where)
     {
         this.select = select == null ? null : unmodifiableList(select);
         this.where = unmodifiableList(where);
@@ -46,28 +67,19 @@ public final class Query implements Jrql
         return Optional.ofNullable(select);
     }
 
+    @SuppressWarnings("unused")
     @JsonProperty("@select")
     @JsonFormat(with = WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
     @JsonInclude(NON_NULL)
-    protected List<Result> getSelect()
+    private List<Result> getSelect()
     {
         return select;
     }
 
     @JsonProperty("@where")
     @JsonFormat(with = WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
-    public List<Map> where()
+    public List<Pattern> where()
     {
         return where;
-    }
-
-    public Query select(Result... select)
-    {
-        return new Query(asList(select), where);
-    }
-
-    public Query where(Map... where)
-    {
-        return new Query(select, asList(where));
     }
 }

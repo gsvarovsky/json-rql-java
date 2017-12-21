@@ -19,12 +19,12 @@ import static org.jsonrql.Jrql.badToken;
 public final class VariableAssignment implements Result
 {
     private final Variable variable;
-    private final Expression expression;
+    private final Value value;
 
-    public VariableAssignment(Variable variable, Expression expression)
+    public VariableAssignment(Variable variable, Value value)
     {
         this.variable = variable;
-        this.expression = expression;
+        this.value = value;
     }
 
     @Override
@@ -38,9 +38,9 @@ public final class VariableAssignment implements Result
         return variable;
     }
 
-    public Expression expression()
+    public Value expression()
     {
-        return expression;
+        return value;
     }
 
     public static class Deserializer extends JsonDeserializer<VariableAssignment>
