@@ -50,9 +50,9 @@ public final class PatternObject implements Pattern, Value
         return new PatternObject(id, type, properties);
     }
 
-    public PatternObject with(String key, Value value)
+    public PatternObject with(String key, String value)
     {
-        return new PatternObject(this, Id.from(key), value);
+        return new PatternObject(this, Id.from(key), Value.from(value));
     }
 
     @Override

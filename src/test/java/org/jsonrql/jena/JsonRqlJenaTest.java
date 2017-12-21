@@ -1,7 +1,6 @@
 package org.jsonrql.jena;
 
 import org.apache.jena.query.QueryFactory;
-import org.jsonrql.Id;
 import org.junit.jupiter.api.Test;
 
 import static org.jsonrql.PatternObject.POBJ;
@@ -16,6 +15,6 @@ class JsonRqlJenaTest
     void testSelectAll()
     {
         assertEquals(QueryFactory.create("SELECT * WHERE { ?s  ?p  ?o}"),
-                     toSparql(JRQL.select(STAR).where(POBJ.id("?s").with("?p", Id.from("?o")))));
+                     toSparql(JRQL.select(STAR).where(POBJ.id("?s").with("?p", "?o"))));
     }
 }
