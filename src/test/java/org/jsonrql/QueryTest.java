@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SuppressWarnings("SameParameterValue")
 class QueryTest
 {
+    private static final Pattern MATCH_TEST_CASE = Pattern.compile("([^/]+)\\.json$");
     private static ObjectMapper objectMapper = new ObjectMapper();
 
     @ParameterizedTest
@@ -36,10 +37,9 @@ class QueryTest
     private static Stream<URL> testCases() throws IOException
     {
         final Set testNames = objectMapper.readValue(QueryTest.class.getResource("testcases.json"), Set.class);
-        final Pattern matchTestCase = Pattern.compile("([^/]+)\\.json$");
         return new Reflections("org.jsonrql.package.test.data", new ResourcesScanner())
-            .getResources(matchTestCase).stream().sorted().filter(tc -> {
-                final Matcher match = matchTestCase.matcher(tc);
+            .getResources(MATCH_TEST_CASE).stream().sorted().filter(tc -> {
+                final Matcher match = MATCH_TEST_CASE.matcher(tc);
                 assertTrue(match.find());
                 final String testName = match.group(1);
                 final boolean isTestCase = testNames.contains(testName);

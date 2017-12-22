@@ -1,12 +1,9 @@
 package org.jsonrql;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.github.jsonldjava.core.Context;
 
-import java.io.IOException;
 import java.util.*;
 
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY;
@@ -94,7 +91,7 @@ public final class Query implements Pattern
 
     @JsonCreator
     private Query(
-        @JsonProperty("@context") @JsonDeserialize(using = ContextDeserializer.class) Context context,
+        @JsonProperty("@context") Context context,
         @JsonProperty("@select") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Result> select,
         @JsonProperty("@construct") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<PatternObject> construct,
         @JsonProperty("@where") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Pattern> where)
@@ -125,15 +122,12 @@ public final class Query implements Pattern
         return select;
     }
 
-    private static class ContextDeserializer extends Jrql.Deserializer<Context>
+    @SuppressWarnings("unused")
+    @JsonProperty("@construct")
+    @JsonFormat(with = WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
+    @JsonInclude(NON_NULL)
+    private List<PatternObject> getConstruct()
     {
-        @Override
-        public Context deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
-        {
-            @SuppressWarnings("unchecked") final Context context = new Context(ctxt.readValue(p, Map.class));
-            // Squirrel away the context for later expansions
-            ctxt.setAttribute("@context", context);
-            return context;
-        }
+        return construct;
     }
 }

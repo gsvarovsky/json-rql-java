@@ -11,6 +11,7 @@ import org.apache.jena.riot.RDFParser;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementPathBlock;
+import org.apache.jena.sparql.syntax.Template;
 import org.jsonrql.Jrql;
 import org.jsonrql.PatternObject;
 import org.jsonrql.Result.Star;
@@ -19,6 +20,7 @@ import org.jsonrql.VariableAssignment;
 
 import java.io.IOException;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.jena.riot.Lang.JSONLD;
 import static org.jsonrql.Variable.isHiddenVar;
 
@@ -44,42 +46,41 @@ public interface JsonRqlJena
                 }
             }));
         });
+        jrqlQuery.construct().ifPresent(construct -> {
+            query.setQueryConstructType();
+            query.setConstructTemplate(new Template(toPattern(
+                construct.stream().map(PatternObject::asJsonLd).collect(toList()))));
+        });
         final ElementGroup group = new ElementGroup(); // Jena always has a group at top level
         jrqlQuery.where().forEach(pattern -> pattern.accept(new Jrql.Visitor()
         {
             @Override
             public void visit(PatternObject patternObject)
             {
-                try
-                {
-                    final String jsonLd = JsonUtils.toString(patternObject.asJsonLd());
-                    group.addElement(new ElementPathBlock(toPattern(toModel(jsonLd))));
-                }
-                catch (IOException e)
-                {
-                    throw new AssertionError(); // Must be something seriously wrong with json-rql itself
-                }
+                group.addElement(new ElementPathBlock(toPattern(patternObject.asJsonLd())));
             }
         }));
         query.setQueryPattern(group);
         return query;
     }
 
-    static Model toModel(String jsonLd)
+    static BasicPattern toPattern(Object jsonld)
     {
-        final Model model = ModelFactory.createDefaultModel();
-        RDFParser.fromString(jsonLd).lang(JSONLD).build().parse(model.getGraph());
-        return model;
-    }
-
-    static BasicPattern toPattern(Model model)
-    {
-        final BasicPattern pattern = new BasicPattern();
-        model.listStatements().forEachRemaining(
-            statement -> pattern.add(new Triple(unhideVar(statement.getSubject().asNode()),
-                                                unhideVar(statement.getPredicate().asNode()),
-                                                unhideVar(statement.getObject().asNode()))));
-        return pattern;
+        try
+        {
+            final Model model = ModelFactory.createDefaultModel();
+            RDFParser.fromString(JsonUtils.toString(jsonld)).lang(JSONLD).build().parse(model.getGraph());
+            final BasicPattern pattern = new BasicPattern();
+            model.listStatements().forEachRemaining(
+                statement -> pattern.add(new Triple(unhideVar(statement.getSubject().asNode()),
+                                                    unhideVar(statement.getPredicate().asNode()),
+                                                    unhideVar(statement.getObject().asNode()))));
+            return pattern;
+        }
+        catch (IOException e)
+        {
+            throw new AssertionError(); // Must be something seriously wrong with json-rql itself
+        }
     }
 
     static Node unhideVar(Node node)
