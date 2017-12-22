@@ -1,22 +1,25 @@
 package org.jsonrql;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 import java.util.Map;
 
 import static java.util.Collections.singletonMap;
 
-@JsonSerialize(using = ToStringSerializer.class)
+@JsonSerialize
 public final class Name implements Id
 {
     private final String name;
 
+    @JsonCreator
     public Name(String name)
     {
         this.name = name;
     }
 
+    @JsonValue
     public String name()
     {
         return name;

@@ -1,26 +1,18 @@
 package org.jsonrql;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
 import static java.util.Collections.singletonMap;
-import static org.jsonrql.Jrql.badMapping;
-import static org.jsonrql.Jrql.badToken;
 
-@JsonDeserialize(using = Variable.Deserializer.class)
-@JsonSerialize(using = ToStringSerializer.class)
+@JsonDeserialize
 public final class Variable implements Id
 {
     private static String HIDDEN_VAR_PREFIX = "http://json-rql.org/var#";
@@ -28,12 +20,17 @@ public final class Variable implements Id
 
     private final String name;
 
-    public Variable(String name)
+    @JsonCreator
+    private Variable(String value)
     {
-        if (name == null)
+        if (value == null)
             throw new NullPointerException("Variable name cannot be null");
 
-        this.name = name;
+        final Matcher match = VAR_PATTERN.matcher(value);
+        if (!match.matches())
+            throw new IllegalArgumentException("Not a variable");
+
+        this.name = match.group(1);
     }
 
     @Override
@@ -60,6 +57,7 @@ public final class Variable implements Id
     }
 
     @Override
+    @JsonValue
     public String toString()
     {
         return "?" + name;
@@ -77,15 +75,15 @@ public final class Variable implements Id
         return obj instanceof Variable && equals((Variable)obj);
     }
 
-    public boolean equals(Variable that)
+    private boolean equals(Variable that)
     {
         return that != null && this.name.equals(that.name);
     }
 
-    public static Optional<Variable> matchVar(Object value)
+    static Optional<Variable> matchVar(Object value)
     {
         return Optional.ofNullable(value).filter(String.class::isInstance).map(String.class::cast)
-            .map(VAR_PATTERN::matcher).filter(Matcher::matches).map(match -> new Variable(match.group(1)));
+            .map(VAR_PATTERN::matcher).filter(Matcher::matches).map(match -> new Variable(match.group()));
     }
 
     public static boolean isHiddenVar(String value)
@@ -96,22 +94,5 @@ public final class Variable implements Id
     public static String unhide(String value)
     {
         return isHiddenVar(value) ? value.substring(HIDDEN_VAR_PREFIX.length()) : value;
-    }
-
-    public static class Deserializer extends JsonDeserializer<Variable>
-    {
-        @Override
-        public Variable deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
-        {
-            switch (p.getCurrentToken())
-            {
-                case VALUE_STRING:
-                case FIELD_NAME:
-                    return matchVar(p.getText()).orElseThrow(() -> badMapping(p, "Not a variable"));
-
-                default:
-                    throw badToken(p, VALUE_STRING);
-            }
-        }
     }
 }

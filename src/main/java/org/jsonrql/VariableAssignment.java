@@ -3,7 +3,6 @@ package org.jsonrql;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -12,7 +11,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.io.IOException;
 
 import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
-import static org.jsonrql.Jrql.badToken;
 
 @JsonDeserialize(using = VariableAssignment.Deserializer.class)
 @JsonSerialize(using = VariableAssignment.Serializer.class)
@@ -43,7 +41,7 @@ public final class VariableAssignment implements Result
         return value;
     }
 
-    public static class Deserializer extends JsonDeserializer<VariableAssignment>
+    public static class Deserializer extends Jrql.Deserializer<VariableAssignment>
     {
         @Override
         public VariableAssignment deserialize(JsonParser p, DeserializationContext ctxt) throws IOException

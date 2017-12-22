@@ -2,20 +2,18 @@ package org.jsonrql;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.io.IOException;
 
 import static com.fasterxml.jackson.core.JsonToken.FIELD_NAME;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
-import static org.jsonrql.Jrql.badToken;
 import static org.jsonrql.Variable.matchVar;
 
 @JsonDeserialize(using = Id.Deserializer.class)
 public interface Id extends Value
 {
-    class Deserializer extends JsonDeserializer<Id>
+    class Deserializer extends Jrql.Deserializer<Id>
     {
         @Override
         public Id deserialize(JsonParser p, DeserializationContext ctxt) throws IOException

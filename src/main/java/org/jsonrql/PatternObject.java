@@ -61,13 +61,13 @@ public final class PatternObject implements Pattern, Value
         final Map<String, Object> jsonld = new HashMap<>();
         id().ifPresent(id -> jsonld.put("@id", id.asIRI()));
         type().ifPresent(type -> jsonld.put("@type", type.asIRI()));
-        properties.forEach((identifier, value) -> jsonld.put(identifier.asIRI(), value.asJsonLd()));
+        properties.forEach((identifier, value) -> jsonld.put(identifier.asIRI(),
+                                                             value == null ? null : value.asJsonLd()));
         return jsonld;
     }
 
     @JsonCreator
-    private PatternObject(@JsonProperty("@id") Id id,
-                          @JsonProperty("@type") Id type)
+    private PatternObject(@JsonProperty("@id") Id id, @JsonProperty("@type") Id type)
     {
         this.id = id;
         this.type = type;
