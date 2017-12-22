@@ -18,7 +18,6 @@ import static java.util.stream.Collectors.toMap;
 @JsonDeserialize
 public final class Query implements Pattern
 {
-    public static Query JRQL = new Query(null, null, null, emptyList());
     public static Set<String> CLAUSES = new HashSet<>(asList(
         "@construct",
         "@select",
@@ -49,9 +48,9 @@ public final class Query implements Pattern
         return context;
     }
 
-    public Query select(Result... select)
+    public static Query select(Result... select)
     {
-        return new Query(context, asList(select), construct, where);
+        return new Query(null, asList(select), null, emptyList());
     }
 
     @JsonIgnore
@@ -60,9 +59,9 @@ public final class Query implements Pattern
         return Optional.ofNullable(select);
     }
 
-    public Query construct(PatternObject... construct)
+    public static Query construct(PatternObject... construct)
     {
-        return new Query(context, select, asList(construct), where);
+        return new Query(null, null, asList(construct), emptyList());
     }
 
     @JsonIgnore
@@ -94,11 +93,11 @@ public final class Query implements Pattern
         @JsonProperty("@context") Context context,
         @JsonProperty("@select") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Result> select,
         @JsonProperty("@construct") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<PatternObject> construct,
-        @JsonProperty("@where") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Pattern> where)
+        @JsonProperty(value = "@where", required = true) @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Pattern> where)
     {
         this.context = context == null ? new Context() : new Context(context);
         this.select = select == null ? null : unmodifiableList(select);
-        this.construct = construct == null ? construct : unmodifiableList(construct);
+        this.construct = construct == null ? null : unmodifiableList(construct);
         this.where = unmodifiableList(where);
     }
 

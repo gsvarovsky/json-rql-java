@@ -20,11 +20,9 @@ import static java.util.stream.Stream.concat;
 @JsonDeserialize
 public final class PatternObject implements Pattern, Value
 {
-    private final Id id;
+    private final Id subject;
     private final Id type;
     private final Map<Id, List<Value>> properties;
-
-    public static PatternObject POBJ = new PatternObject(null, null);
 
     @Override
     public void accept(Visitor visitor)
@@ -32,19 +30,19 @@ public final class PatternObject implements Pattern, Value
         visitor.visit(this);
     }
 
-    public Optional<Id> id()
+    public Optional<Id> subject()
     {
-        return Optional.ofNullable(id);
+        return Optional.ofNullable(subject);
     }
 
-    public PatternObject id(Id id)
+    public static PatternObject subject(Id id)
     {
-        return new PatternObject(id, type, properties);
+        return new PatternObject(id, null);
     }
 
-    public PatternObject id(String id)
+    public static PatternObject subject(String id)
     {
-        return id(Id.from(id));
+        return subject(Id.from(id));
     }
 
     public Optional<Id> type()
@@ -54,7 +52,7 @@ public final class PatternObject implements Pattern, Value
 
     public PatternObject type(Id type)
     {
-        return new PatternObject(id, type, properties);
+        return new PatternObject(subject, type, properties);
     }
 
     public PatternObject with(String key, String... values)
@@ -66,7 +64,7 @@ public final class PatternObject implements Pattern, Value
     public Map asJsonLd()
     {
         final Map<String, Object> jsonld = new HashMap<>();
-        id().ifPresent(id -> jsonld.put("@id", id.asIRI()));
+        subject().ifPresent(id -> jsonld.put("@id", id.asIRI()));
         type().ifPresent(type -> jsonld.put("@type", type.asIRI()));
         properties.forEach((identifier, values) -> jsonld
             .put(identifier.asIRI(), values.stream().map(Value::toJsonLd).collect(toList())));
@@ -74,21 +72,21 @@ public final class PatternObject implements Pattern, Value
     }
 
     @JsonCreator
-    private PatternObject(@JsonProperty("@id") Id id, @JsonProperty("@type") Id type)
+    private PatternObject(@JsonProperty("@id") Id subject, @JsonProperty("@type") Id type)
     {
-        this(id, type, emptyMap());
+        this(subject, type, emptyMap());
     }
 
     private PatternObject(PatternObject pobj, Id newId, Stream<Value> newValues)
     {
-        this(pobj.id, pobj.type, pobj.properties);
+        this(pobj.subject, pobj.type, pobj.properties);
         properties.computeIfPresent(newId, (id, values) -> valuesList(concat(values.stream(), newValues)));
         properties.computeIfAbsent(newId, id -> valuesList(newValues));
     }
 
-    private PatternObject(Id id, Id type, Map<Id, List<Value>> properties)
+    private PatternObject(Id subject, Id type, Map<Id, List<Value>> properties)
     {
-        this.id = id;
+        this.subject = subject;
         this.type = type;
         this.properties = new HashMap<>(properties);
     }
@@ -96,9 +94,9 @@ public final class PatternObject implements Pattern, Value
     @JsonProperty("@id")
     @JsonInclude(NON_NULL)
     @SuppressWarnings("unused")
-    private Value getId()
+    private Value getSubject()
     {
-        return id;
+        return subject;
     }
 
     @JsonProperty("@type")
