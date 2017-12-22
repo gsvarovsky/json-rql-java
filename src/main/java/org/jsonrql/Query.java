@@ -2,7 +2,6 @@ package org.jsonrql;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.github.jsonldjava.core.Context;
 
 import java.util.*;
 
@@ -11,9 +10,7 @@ import static com.fasterxml.jackson.annotation.JsonFormat.Feature.WRITE_SINGLE_E
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.Collections.*;
 
 @JsonDeserialize
 public final class Query implements Pattern
@@ -32,18 +29,29 @@ public final class Query implements Pattern
         "@values"
     ));
 
-    private final Context context;
+    private final Map<String, Object> context;
     private final List<Result> select;
     private final List<PatternObject> construct;
     private final List<Pattern> where;
 
-    public Query context(Context context)
+    public Query base(String base)
     {
-        return new Query(context, select, construct, where);
+        return withContext("@base", base);
     }
 
-    @JsonIgnore
-    public Context context()
+    public Query vocab(String vocab)
+    {
+        return withContext("@vocab", vocab);
+    }
+
+    public Query prefix(String pre, String expanded)
+    {
+        return withContext(pre, expanded);
+    }
+
+    @JsonProperty("@context")
+    @JsonInclude(NON_EMPTY)
+    public Map<String, Object> context()
     {
         return context;
     }
@@ -90,26 +98,15 @@ public final class Query implements Pattern
 
     @JsonCreator
     private Query(
-        @JsonProperty("@context") Context context,
+        @JsonProperty("@context") Map<String, Object> context,
         @JsonProperty("@select") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Result> select,
         @JsonProperty("@construct") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<PatternObject> construct,
         @JsonProperty(value = "@where", required = true) @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Pattern> where)
     {
-        this.context = context == null ? new Context() : new Context(context);
+        this.context = context == null ? emptyMap() : unmodifiableMap(context);
         this.select = select == null ? null : unmodifiableList(select);
         this.construct = construct == null ? null : unmodifiableList(construct);
         this.where = unmodifiableList(where);
-    }
-
-    @SuppressWarnings("unused")
-    @JsonProperty("@context")
-    @JsonInclude(NON_EMPTY)
-    private Map<String, Object> getContext()
-    {
-        // Ignore an empty @base
-        return context.entrySet().stream()
-            .filter(e -> !"@base".equals(e.getKey()) || !"".equals(e.getValue()))
-            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @SuppressWarnings("unused")
@@ -128,5 +125,12 @@ public final class Query implements Pattern
     private List<PatternObject> getConstruct()
     {
         return construct;
+    }
+
+    private Query withContext(String key, Object value)
+    {
+        final Map<String, Object> newContext = new HashMap<>(context);
+        newContext.put(key, value);
+        return new Query(newContext, select, construct, where);
     }
 }

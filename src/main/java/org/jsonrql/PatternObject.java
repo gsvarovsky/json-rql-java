@@ -42,7 +42,7 @@ public final class PatternObject implements Pattern, Value
 
     public static PatternObject subject(String id)
     {
-        return subject(Id.from(id));
+        return subject(Id.id(id));
     }
 
     public Optional<Id> type()
@@ -55,9 +55,19 @@ public final class PatternObject implements Pattern, Value
         return new PatternObject(subject, type, properties);
     }
 
+    public PatternObject type(String type)
+    {
+        return type(Id.id(type));
+    }
+
     public PatternObject with(String key, String... values)
     {
-        return new PatternObject(this, Id.from(key), stream(values).map(Value::fromString));
+        return new PatternObject(this, Id.id(key), stream(values).map(Value::value));
+    }
+
+    public PatternObject with(String key, Value... values)
+    {
+        return new PatternObject(this, Id.id(key), stream(values));
     }
 
     @Override
@@ -120,7 +130,7 @@ public final class PatternObject implements Pattern, Value
     @SuppressWarnings("unused")
     private void setProperty(String key, List<Value> expr)
     {
-        properties.put(Id.from(key), unmodifiableList(expr));
+        properties.put(Id.id(key), unmodifiableList(expr));
     }
 
     private static List<Value> valuesList(Stream<Value> newValues)

@@ -24,7 +24,7 @@ public interface Value extends Jrql
             switch (p.getCurrentToken())
             {
                 case VALUE_STRING:
-                    return Value.fromString(p.getText());
+                    return Value.value(p.getText());
 
                 case START_OBJECT:
                     return readAhead(p, ctxt, node ->
@@ -48,7 +48,7 @@ public interface Value extends Jrql
 
     Object asJsonLd();
 
-    static Value fromString(String str)
+    static Value value(String str)
     {
         // Note that we can be explicit about @ids and @values using an object
         return str == null ? null : matchVar(str).map(Value.class::cast).orElse(literal(str));

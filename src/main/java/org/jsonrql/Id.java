@@ -22,7 +22,7 @@ public interface Id extends Value
             {
                 case FIELD_NAME:
                 case VALUE_STRING:
-                    return Id.from(p.getText());
+                    return Id.id(p.getText());
 
                 default:
                     throw badToken(p, FIELD_NAME, VALUE_STRING);
@@ -32,7 +32,7 @@ public interface Id extends Value
 
     String asIRI();
 
-    static Id from(String text)
+    static Id id(String text)
     {
         return matchVar(text).map(Id.class::cast).orElse(new Name(text));
     }

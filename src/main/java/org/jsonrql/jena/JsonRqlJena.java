@@ -19,6 +19,9 @@ import org.jsonrql.Variable;
 import org.jsonrql.VariableAssignment;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.jena.riot.Lang.JSONLD;
@@ -48,8 +51,9 @@ public interface JsonRqlJena
         });
         jrqlQuery.construct().ifPresent(construct -> {
             query.setQueryConstructType();
-            query.setConstructTemplate(new Template(toPattern(
-                construct.stream().map(PatternObject::asJsonLd).collect(toList()))));
+            query.setConstructTemplate(new Template(JsonRqlJena.toPattern(
+                construct.stream().map(PatternObject::asJsonLd).collect(toList()),
+                jrqlQuery.context())));
         });
         final ElementGroup group = new ElementGroup(); // Jena always has a group at top level
         jrqlQuery.where().forEach(pattern -> pattern.accept(new Jrql.Visitor()
@@ -57,11 +61,27 @@ public interface JsonRqlJena
             @Override
             public void visit(PatternObject patternObject)
             {
-                group.addElement(new ElementPathBlock(toPattern(patternObject.asJsonLd())));
+                group.addElement(new ElementPathBlock(
+                    JsonRqlJena.toPattern(patternObject.asJsonLd(), jrqlQuery.context())));
             }
         }));
         query.setQueryPattern(group);
         return query;
+    }
+
+    static BasicPattern toPattern(List graph, Map context)
+    {
+        Map jsonld = new HashMap();
+        //noinspection unchecked
+        jsonld.put("@graph", graph);
+        return toPattern(jsonld, context);
+    }
+
+    static BasicPattern toPattern(Map graph, Map context)
+    {
+        //noinspection unchecked
+        graph.put("@context", context);
+        return toPattern(graph);
     }
 
     static BasicPattern toPattern(Object jsonld)
