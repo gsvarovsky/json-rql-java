@@ -10,7 +10,6 @@ import static org.jsonrql.Literal.literal;
 import static org.jsonrql.PatternObject.subject;
 import static org.jsonrql.Query.*;
 import static org.jsonrql.Result.STAR;
-import static org.jsonrql.jena.JsonRqlJena.toSparql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JsonRqlJenaTest
@@ -19,7 +18,7 @@ class JsonRqlJenaTest
     void testSelectAll()
     {
         assertEquals(QueryFactory.create("SELECT * WHERE { ?s  ?p  ?o}"),
-                     toSparql(select(STAR).where(subject("?s").with("?p", "?o"))));
+                     JsonRqlJena.toSparql(select(STAR).where(subject("?s").with("?p", "?o"))));
     }
 
     @Test
@@ -27,7 +26,7 @@ class JsonRqlJenaTest
     {
         final PatternObject patternObject = subject("?s").with("?p", "?o");
         assertEquals(QueryFactory.create("CONSTRUCT { ?s  ?p  ?o} WHERE { ?s  ?p  ?o}"),
-                     toSparql(construct(patternObject).where(patternObject)));
+                     JsonRqlJena.toSparql(construct(patternObject).where(patternObject)));
     }
 
     @Test
@@ -41,14 +40,14 @@ class JsonRqlJenaTest
                     "    ?p  <http://dbpedia.org/ontology/birthPlace>  ?c ;\n" +
                     "        a                     <http://dbpedia.org/ontology/Artist>\n" +
                     "  }"),
-        toSparql(
-            select("?p", "?c")
-                .where(
-                    subject("?p")
-                        .type("dbpedia-owl:Artist")
-                        .with("dbpedia-owl:birthPlace", subject("?c")
-                            .with("http://xmlns.com/foaf/0.1/name", literal("York").language("en"))))
-            .prefix("dbpedia-owl", "http://dbpedia.org/ontology/")));
+            JsonRqlJena.toSparql(
+                select("?p", "?c")
+                    .where(
+                        subject("?p")
+                            .type("dbpedia-owl:Artist")
+                            .with("dbpedia-owl:birthPlace", subject("?c")
+                                .with("http://xmlns.com/foaf/0.1/name", literal("York").language("en"))))
+                    .prefix("dbpedia-owl", "http://dbpedia.org/ontology/")));
     }
 
     @Test
@@ -71,7 +70,7 @@ class JsonRqlJenaTest
                     "              <http://dbpedia.org/ontology/country>  ?country .\n" +
                     "    ?country  <http://www.w3.org/2000/01/rdf-schema#label>  \"Belgium\"@en\n" +
                     "  }\n"),
-            toSparql(
+            JsonRqlJena.toSparql(
                 construct(
                     subject("?person")
                         .type("dbpedia-owl:Artist")
@@ -106,7 +105,7 @@ class JsonRqlJenaTest
                     "  }\n" +
                     "ORDER BY ?label\n" +
                     "LIMIT   10"),
-            toSparql(
+            JsonRqlJena.toSparql(
                 distinct("?product", "?label")
                     .where(
                         subject("?product")
