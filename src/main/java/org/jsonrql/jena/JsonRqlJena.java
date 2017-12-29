@@ -59,7 +59,14 @@ public interface JsonRqlJena
                     JsonRqlJena.asPattern(asGraph(patternObject), jrqlQuery.context())));
 
                 // Pull out any in-line filters recursively
-                patternObject.values().forEach(value -> value.accept(new Jrql.Visitor()
+                patternObject.values().forEach(this::extractFilters);
+            }
+
+            // Mysteriously, this method cannot be in-lined due to an IllegalAccessError in the hotspot compiler
+            // http://hg.openjdk.java.net/jdk8u/jdk8u/hotspot/rev/0b85ccd62409#l11.80
+            void extractFilters(Value value)
+            {
+                value.accept(new Jrql.Visitor()
                 {
                     @Override
                     public void visit(PatternObject patternObject)
@@ -79,7 +86,7 @@ public interface JsonRqlJena
                                                      .map(JsonRqlJena::asExpr).collect(joining(" "))))
                             .forEach(expr -> group.addElement(new ElementFilter(SSE.parseExpr(expr, prefixes))));
                     }
-                }));
+                });
             }
         }));
         query.setQueryPattern(group);
