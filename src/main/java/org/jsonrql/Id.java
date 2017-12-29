@@ -8,10 +8,11 @@ import java.io.IOException;
 
 import static com.fasterxml.jackson.core.JsonToken.FIELD_NAME;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
+import static org.jsonrql.Name.name;
 import static org.jsonrql.Variable.matchVar;
 
 @JsonDeserialize(using = Id.Deserializer.class)
-public interface Id extends Value
+public interface Id extends Value, Expression
 {
     class Deserializer extends Jrql.Deserializer<Id>
     {
@@ -30,10 +31,8 @@ public interface Id extends Value
         }
     }
 
-    String asIRI();
-
     static Id id(String text)
     {
-        return matchVar(text).map(Id.class::cast).orElse(new Name(text));
+        return matchVar(text).map(Id.class::cast).orElse(name(text));
     }
 }

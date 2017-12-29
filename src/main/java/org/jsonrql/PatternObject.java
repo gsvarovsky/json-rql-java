@@ -70,15 +70,9 @@ public final class PatternObject implements Pattern, Value
         return new PatternObject(this, Id.id(key), stream(values));
     }
 
-    @Override
-    public Map asJsonLd()
+    public Stream<Value> values()
     {
-        final Map<String, Object> jsonld = new HashMap<>();
-        subject().ifPresent(id -> jsonld.put("@id", id.asIRI()));
-        type().ifPresent(type -> jsonld.put("@type", type.asIRI()));
-        properties.forEach((identifier, values) -> jsonld
-            .put(identifier.asIRI(), values.stream().map(Value::toJsonLd).collect(toList())));
-        return jsonld;
+        return properties.values().stream().flatMap(List::stream);
     }
 
     @JsonCreator

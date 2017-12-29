@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/gsvarovsky/json-rql-java.svg?branch=master)](https://travis-ci.org/gsvarovsky/json-rql)
+[![Build Status](https://travis-ci.org/gsvarovsky/json-rql-java.svg?branch=master)](https://travis-ci.org/gsvarovsky/json-rql-java)
 
 # json-rql-java
 Java library for the 
@@ -14,20 +14,14 @@ In contrast to the JavaScript library, this library:
 
 DSL example:
 ```
-construct(
-    subject("?person")
-        .type("dbpedia-owl:Artist")
-        .with("dbpedia-owl:birthPlace", "?city")
-        .with("rdfs:label", "?name"))
-             .where(
-                 subject("?person")
-                     .type("dbpedia-owl:Artist")
-                     .with("dbpedia-owl:birthPlace", subject("?city")
-                         .with("dbpedia-owl:country", subject("?country")
-                             .with("rdfs:label", literal("Belgium").language("en")))
-                         .with("rdfs:label", id("?cityName"), literal("Ghent").language("en")))
-                     .with("rdfs:label", "?name"))
-             .prefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
-             .prefix("dbpedia", "http://dbpedia.org/resource/")
-             .prefix("dbpedia-owl", "http://dbpedia.org/ontology/")
+select("?p", "?c")
+    .where(
+        subject("?p")
+            .type("dbpedia-owl:Artist")
+            .with("dbpedia-owl:birthPlace", subject("?c")
+                .with("http://xmlns.com/foaf/0.1/name", literal("York").language("en"))))
+    .prefix("dbpedia-owl", "http://dbpedia.org/ontology/")
 ```
+See the [Jena tests](/src/test/java/org/jsonrql/jena/JsonRqlJenaTest.java) for more examples.
+
+**[Feedback](https://github.com/gsvarovsky/json-rql-java/issues) and contributions welcome!**

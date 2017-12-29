@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.node.TreeTraversingParser;
 import org.jsonrql.Result.Star;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -18,6 +19,19 @@ import static java.util.Arrays.asList;
 
 public interface Jrql
 {
+    interface Transform<T>
+    {
+        default T map(Star star) { return null; }
+        default T map(Query query) { return null; }
+        default T map(VariableAssignment variableAssignment) { return null; }
+        default T map(Variable variable) { return null; }
+        default T map(PatternObject patternObject) { return null; }
+        default T map(Name name) { return null; }
+        default T map(Literal literal) { return null; }
+        default T map(InlineFilter inlineFilter) { return null; }
+        default T map(Group group) { return null; }
+    }
+
     interface Visitor
     {
         default void visit(Star star) {}
@@ -27,9 +41,76 @@ public interface Jrql
         default void visit(PatternObject patternObject) {}
         default void visit(Name name) {}
         default void visit(Literal literal) {}
+        default void visit(InlineFilter inlineFilter) {}
+        default void visit(Group group) {}
     }
 
     void accept(Visitor visitor);
+
+    static <T> T map(Jrql jrql, Transform<T> transform)
+    {
+        if (jrql == null)
+            return null;
+
+        final AtomicReference<T> ref = new AtomicReference<>();
+        jrql.accept(new Visitor()
+        {
+            @Override
+            public void visit(Star star)
+            {
+                ref.set(transform.map(star));
+            }
+
+            @Override
+            public void visit(Query query)
+            {
+                ref.set(transform.map(query));
+            }
+
+            @Override
+            public void visit(VariableAssignment variableAssignment)
+            {
+                ref.set(transform.map(variableAssignment));
+            }
+
+            @Override
+            public void visit(Variable variable)
+            {
+                ref.set(transform.map(variable));
+            }
+
+            @Override
+            public void visit(PatternObject patternObject)
+            {
+                ref.set(transform.map(patternObject));
+            }
+
+            @Override
+            public void visit(Name name)
+            {
+                ref.set(transform.map(name));
+            }
+
+            @Override
+            public void visit(Literal literal)
+            {
+                ref.set(transform.map(literal));
+            }
+
+            @Override
+            public void visit(InlineFilter inlineFilter)
+            {
+                ref.set(transform.map(inlineFilter));
+            }
+
+            @Override
+            public void visit(Group group)
+            {
+                ref.set(transform.map(group));
+            }
+        });
+        return ref.get();
+    }
 
     abstract class Deserializer<T> extends JsonDeserializer<T>
     {

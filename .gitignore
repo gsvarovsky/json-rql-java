@@ -39,5 +39,7 @@ buildNumber.properties
 # IntelliJ project file
 json-rql-java.iml
 
-# json-rql test resources (downloaded as a .tgz from NPM)
-src/test/resources/org/jsonrql/package/
+# json-rql resources (downloaded from GitHub)
+src/test/resources/json-rql-*
+src/main/resources/org/jsonrql/keywords.json
+

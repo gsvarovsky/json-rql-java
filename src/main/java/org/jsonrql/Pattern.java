@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.io.IOException;
 
 import static com.fasterxml.jackson.core.JsonToken.START_OBJECT;
+import static org.jsonrql.Keywords.KEYWORDS;
 
 @JsonDeserialize(using = Pattern.Deserializer.class)
 public interface Pattern extends Jrql
@@ -21,7 +22,9 @@ public interface Pattern extends Jrql
                 case START_OBJECT:
                     // Unfortunately we need to read ahead to decide on the target type
                     return readAhead(p, ctxt, node ->
-                        fieldsOf(node).anyMatch(Query.CLAUSES::contains) ? Query.class : PatternObject.class);
+                        fieldsOf(node).anyMatch(KEYWORDS.clauses::containsKey) ? Query.class
+                            : fieldsOf(node).anyMatch(KEYWORDS.groupPatterns::containsKey) ? Group.class
+                            : PatternObject.class);
 
                 default:
                     throw badToken(p, START_OBJECT);

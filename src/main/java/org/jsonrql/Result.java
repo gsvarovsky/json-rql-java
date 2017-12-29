@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.io.IOException;
 
 import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
+import static org.jsonrql.Variable.matchVar;
 
 @JsonDeserialize(using = Result.Deserializer.class)
 public interface Result extends Jrql
@@ -34,10 +35,19 @@ public interface Result extends Jrql
         @Override
         public Result deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
         {
-            if (p.getCurrentToken() == VALUE_STRING && STAR.toString().equals(p.getText()))
-                return STAR;
-            else
-                return ctxt.readValue(p, VariableAssignment.class);
+            switch (p.getCurrentToken())
+            {
+                case VALUE_STRING:
+                    return Result.result(p.getText());
+
+                default:
+                    throw badToken(p, VALUE_STRING);
+            }
         }
+    }
+
+    static Result result(String str)
+    {
+        return STAR.toString().equals(str) ? STAR : matchVar(str).orElseThrow(IllegalArgumentException::new);
     }
 }

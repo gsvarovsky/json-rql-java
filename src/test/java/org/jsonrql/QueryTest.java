@@ -4,23 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.reflections.Reflections;
-import org.reflections.scanners.ResourcesScanner;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("SameParameterValue")
 class QueryTest
 {
-    private static final Pattern MATCH_TEST_CASE = Pattern.compile("([^/]+)\\.json$");
     private static ObjectMapper objectMapper = new ObjectMapper();
 
     @ParameterizedTest
@@ -36,17 +31,11 @@ class QueryTest
 
     private static Stream<URL> testCases() throws IOException
     {
-        final Set testNames = objectMapper.readValue(QueryTest.class.getResource("testcases.json"), Set.class);
-        return new Reflections("org.jsonrql.package.test.data", new ResourcesScanner())
-            .getResources(MATCH_TEST_CASE).stream().sorted().filter(tc -> {
-                final Matcher match = MATCH_TEST_CASE.matcher(tc);
-                assertTrue(match.find());
-                final String testName = match.group(1);
-                final boolean isTestCase = testNames.contains(testName);
-                if (!isTestCase && !"todo".equals(testName)) // TODO: Move this file in the json-rql project
-                    System.out.println("Not testing example " + testName);
-                return isTestCase;
-            })
-            .map(tc -> QueryTest.class.getResource("/" + tc));
+        @SuppressWarnings("unchecked") final Set<String> testNames =
+            objectMapper.readValue(QueryTest.class.getResource("testcases.json"), Set.class);
+        return testNames.stream().map(
+            tc -> QueryTest.class.getResource(format("/json-rql-%s/test/data/%s.json",
+                                                     System.getProperty("json-rql.version"),
+                                                     tc)));
     }
 }
