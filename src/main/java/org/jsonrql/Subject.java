@@ -18,11 +18,21 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 
 @JsonDeserialize
-public final class PatternObject implements Pattern, Value
+public final class Subject implements Pattern, Value
 {
-    private final Id subject;
+    private final Id id;
     private final Id type;
     private final Map<Id, List<Value>> properties;
+
+    public static Subject subject(Id id)
+    {
+        return new Subject(id, null);
+    }
+
+    public static Subject subject(String id)
+    {
+        return subject(Id.id(id));
+    }
 
     @Override
     public void accept(Visitor visitor)
@@ -30,19 +40,9 @@ public final class PatternObject implements Pattern, Value
         visitor.visit(this);
     }
 
-    public Optional<Id> subject()
+    public Optional<Id> id()
     {
-        return Optional.ofNullable(subject);
-    }
-
-    public static PatternObject subject(Id id)
-    {
-        return new PatternObject(id, null);
-    }
-
-    public static PatternObject subject(String id)
-    {
-        return subject(Id.id(id));
+        return Optional.ofNullable(id);
     }
 
     public Optional<Id> type()
@@ -50,24 +50,24 @@ public final class PatternObject implements Pattern, Value
         return Optional.ofNullable(type);
     }
 
-    public PatternObject type(Id type)
+    public Subject type(Id type)
     {
-        return new PatternObject(subject, type, properties);
+        return new Subject(id, type, properties);
     }
 
-    public PatternObject type(String type)
+    public Subject type(String type)
     {
         return type(Id.id(type));
     }
 
-    public PatternObject with(String key, String... values)
+    public Subject with(String key, String... values)
     {
-        return new PatternObject(this, Id.id(key), stream(values).map(Value::value));
+        return new Subject(this, Id.id(key), stream(values).map(Value::value));
     }
 
-    public PatternObject with(String key, Value... values)
+    public Subject with(String key, Value... values)
     {
-        return new PatternObject(this, Id.id(key), stream(values));
+        return new Subject(this, Id.id(key), stream(values));
     }
 
     public Stream<Value> values()
@@ -76,21 +76,21 @@ public final class PatternObject implements Pattern, Value
     }
 
     @JsonCreator
-    private PatternObject(@JsonProperty("@id") Id subject, @JsonProperty("@type") Id type)
+    private Subject(@JsonProperty("@id") Id id, @JsonProperty("@type") Id type)
     {
-        this(subject, type, emptyMap());
+        this(id, type, emptyMap());
     }
 
-    private PatternObject(PatternObject pobj, Id newId, Stream<Value> newValues)
+    private Subject(Subject pobj, Id newId, Stream<Value> newValues)
     {
-        this(pobj.subject, pobj.type, pobj.properties);
+        this(pobj.id, pobj.type, pobj.properties);
         properties.computeIfPresent(newId, (id, values) -> valuesList(concat(values.stream(), newValues)));
         properties.computeIfAbsent(newId, id -> valuesList(newValues));
     }
 
-    private PatternObject(Id subject, Id type, Map<Id, List<Value>> properties)
+    private Subject(Id id, Id type, Map<Id, List<Value>> properties)
     {
-        this.subject = subject;
+        this.id = id;
         this.type = type;
         this.properties = new HashMap<>(properties);
     }
@@ -98,9 +98,9 @@ public final class PatternObject implements Pattern, Value
     @JsonProperty("@id")
     @JsonInclude(NON_NULL)
     @SuppressWarnings("unused")
-    private Value getSubject()
+    private Value getId()
     {
-        return subject;
+        return id;
     }
 
     @JsonProperty("@type")

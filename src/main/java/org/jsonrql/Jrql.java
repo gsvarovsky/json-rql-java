@@ -25,7 +25,7 @@ public interface Jrql
         default T map(Query query) { return null; }
         default T map(VariableAssignment variableAssignment) { return null; }
         default T map(Variable variable) { return null; }
-        default T map(PatternObject patternObject) { return null; }
+        default T map(Subject subject) { return null; }
         default T map(Name name) { return null; }
         default T map(Literal literal) { return null; }
         default T map(InlineFilter inlineFilter) { return null; }
@@ -38,7 +38,7 @@ public interface Jrql
         default void visit(Query query) {}
         default void visit(VariableAssignment variableAssignment) {}
         default void visit(Variable variable) {}
-        default void visit(PatternObject patternObject) {}
+        default void visit(Subject subject) {}
         default void visit(Name name) {}
         default void visit(Literal literal) {}
         default void visit(InlineFilter inlineFilter) {}
@@ -80,9 +80,9 @@ public interface Jrql
             }
 
             @Override
-            public void visit(PatternObject patternObject)
+            public void visit(Subject subject)
             {
-                ref.set(transform.map(patternObject));
+                ref.set(transform.map(subject));
             }
 
             @Override

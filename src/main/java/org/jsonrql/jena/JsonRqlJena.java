@@ -53,13 +53,13 @@ public interface JsonRqlJena
         jrqlQuery.where().forEach(pattern -> pattern.accept(new Jrql.Visitor()
         {
             @Override
-            public void visit(PatternObject patternObject)
+            public void visit(Subject subject)
             {
                 group.addElement(new ElementPathBlock(
-                    JsonRqlJena.asPattern(asGraph(patternObject), jrqlQuery.context())));
+                    JsonRqlJena.asPattern(asGraph(subject), jrqlQuery.context())));
 
                 // Pull out any in-line filters recursively
-                patternObject.values().forEach(this::extractFilters);
+                subject.values().forEach(this::extractFilters);
             }
 
             // Mysteriously, this method cannot be in-lined due to an IllegalAccessError in the hotspot compiler
@@ -69,9 +69,9 @@ public interface JsonRqlJena
                 value.accept(new Jrql.Visitor()
                 {
                     @Override
-                    public void visit(PatternObject patternObject)
+                    public void visit(Subject subject)
                     {
-                        patternObject.values().forEach(value -> value.accept(this));
+                        subject.values().forEach(value -> value.accept(this));
                     }
 
                     @Override

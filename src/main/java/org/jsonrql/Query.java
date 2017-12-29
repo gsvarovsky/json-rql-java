@@ -25,7 +25,7 @@ public final class Query implements Pattern
     private final List<Result> select;
     private final List<Result> distinct;
     private final List<Result> describe;
-    private final List<PatternObject> construct;
+    private final List<Subject> construct;
     private final List<Pattern> where;
     private final List<Expression> orderBy;
     private final Integer limit, offset;
@@ -107,13 +107,13 @@ public final class Query implements Pattern
         return Optional.ofNullable(describe);
     }
 
-    public static Query construct(PatternObject... construct)
+    public static Query construct(Subject... construct)
     {
         return new Query(null, null, null, null, asList(construct), emptyList(), null, null, null);
     }
 
     @JsonIgnore
-    public Optional<List<PatternObject>> construct()
+    public Optional<List<Subject>> construct()
     {
         return Optional.ofNullable(construct);
     }
@@ -181,7 +181,7 @@ public final class Query implements Pattern
         @JsonProperty("@select") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Result> select,
         @JsonProperty("@distinct") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Result> distinct,
         @JsonProperty("@describe") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Result> describe,
-        @JsonProperty("@construct") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<PatternObject> construct,
+        @JsonProperty("@construct") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Subject> construct,
         @JsonProperty(value = "@where", required = true) @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Pattern> where,
         @JsonProperty("@orderBy") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Expression> orderBy,
         @JsonProperty("@limit") Integer limit,
@@ -229,7 +229,7 @@ public final class Query implements Pattern
     @JsonProperty("@construct")
     @JsonFormat(with = WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
     @JsonInclude(NON_NULL)
-    private List<PatternObject> getConstruct()
+    private List<Subject> getConstruct()
     {
         return construct;
     }

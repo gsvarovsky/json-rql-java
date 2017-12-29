@@ -35,7 +35,7 @@ public interface JsonLd
             }
 
             @Override
-            public Object map(PatternObject po)
+            public Object map(Subject po)
             {
                 //noinspection unchecked
                 return JsonLd.asGraph(po);
@@ -66,10 +66,10 @@ public interface JsonLd
         });
     }
 
-    static Map asGraph(PatternObject po)
+    static Map asGraph(Subject po)
     {
         final Map<String, Object> graph = new HashMap<>();
-        po.subject().ifPresent(id -> graph.put("@id", asIRI(id)));
+        po.id().ifPresent(id -> graph.put("@id", asIRI(id)));
         po.type().ifPresent(type -> graph.put("@type", asIRI(type)));
         po.properties().forEach((identifier, values) -> graph
             .put(asIRI(identifier), values.stream().map(JsonLd::asGraph).collect(toList())));

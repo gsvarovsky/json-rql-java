@@ -28,7 +28,7 @@ public interface Value extends Jrql
                     return readAhead(p, ctxt, node ->
                         fieldsOf(node).anyMatch("@value"::equals) ? QualifiedLiteral.class
                             : fieldsOf(node).anyMatch(KEYWORDS.operators::containsKey) ? InlineFilter.class
-                            : PatternObject.class);
+                            : Subject.class);
 
                 default:
                     return ctxt.readValue(p, Literal.class);

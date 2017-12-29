@@ -13,11 +13,11 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @JsonDeserialize
 public final class Group implements Pattern
 {
-    private final List<PatternObject> graph;
+    private final List<Subject> graph;
     private final List<Expression> filter;
 
     @JsonIgnore
-    public Optional<List<PatternObject>> graph()
+    public Optional<List<Subject>> graph()
     {
         return Optional.ofNullable(graph);
     }
@@ -29,7 +29,7 @@ public final class Group implements Pattern
     }
 
     @JsonCreator
-    private Group(@JsonProperty("@graph") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<PatternObject> graph,
+    private Group(@JsonProperty("@graph") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Subject> graph,
                   @JsonProperty("@filter") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Expression> filter)
     {
         this.graph = graph;
@@ -40,7 +40,7 @@ public final class Group implements Pattern
     @JsonProperty("@graph")
     @JsonFormat(with = WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
     @JsonInclude(NON_NULL)
-    private List<PatternObject> getGraph()
+    private List<Subject> getGraph()
     {
         return graph;
     }

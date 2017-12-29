@@ -24,7 +24,7 @@ public interface Pattern extends Jrql
                     return readAhead(p, ctxt, node ->
                         fieldsOf(node).anyMatch(KEYWORDS.clauses::containsKey) ? Query.class
                             : fieldsOf(node).anyMatch(KEYWORDS.groupPatterns::containsKey) ? Group.class
-                            : PatternObject.class);
+                            : Subject.class);
 
                 default:
                     throw badToken(p, START_OBJECT);

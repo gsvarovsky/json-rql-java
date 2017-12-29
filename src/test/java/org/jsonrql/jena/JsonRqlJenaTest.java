@@ -1,15 +1,15 @@
 package org.jsonrql.jena;
 
 import org.apache.jena.query.QueryFactory;
-import org.jsonrql.PatternObject;
+import org.jsonrql.Subject;
 import org.junit.jupiter.api.Test;
 
 import static org.jsonrql.Id.id;
 import static org.jsonrql.InlineFilter.filter;
 import static org.jsonrql.Literal.literal;
-import static org.jsonrql.PatternObject.subject;
 import static org.jsonrql.Query.*;
 import static org.jsonrql.Result.STAR;
+import static org.jsonrql.Subject.subject;
 import static org.jsonrql.jena.JsonRqlJena.toSparql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -25,9 +25,9 @@ class JsonRqlJenaTest
     @Test
     void testConstruct()
     {
-        final PatternObject patternObject = subject("?s").with("?p", "?o");
+        final Subject subject = subject("?s").with("?p", "?o");
         assertEquals(QueryFactory.create("CONSTRUCT { ?s  ?p  ?o} WHERE { ?s  ?p  ?o}"),
-                     toSparql(construct(patternObject).where(patternObject)));
+                     toSparql(construct(subject).where(subject)));
     }
 
     @Test
