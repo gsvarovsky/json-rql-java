@@ -6,6 +6,7 @@ import org.jsonrql.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;
 
@@ -19,32 +20,42 @@ public interface JsonLd
      * <p>
      * Note that this will be lossy, as <b>json-rql</b> features such as in-line filters will be lost.
      * Use another {@link Jrql.Visitor} to visit all features of the value.
-     *
-     * @return this value as a static RDF graph
      */
     static Object asGraph(Value value)
+    {
+        return asGraph(value, false);
+    }
+
+    /**
+     * Obtains a static RDF graph from the given value, in a form suitable for conversion to JSON-LD
+     * using the JSON-LD Java library.
+     * <p>
+     * If <code>strict</code> is <code>true</code>, <b>json-rql</b> features such as in-line filters
+     * and variables will throw an {@link IllegalArgumentException}. Otherwise, these will be lost or hidden.
+     */
+    static Object asGraph(Value value, boolean strict) throws IllegalArgumentException
     {
         return Jrql.map(value, new Jrql.Transform<Object>()
         {
             @Override
             public Object map(Variable variable)
             {
+                if (strict)
+                    throw new IllegalArgumentException("Variable found in conversion to JSON-LD");
+
                 // We hide the variable name in a json-rql.org URI
-                //noinspection unchecked
                 return singletonMap("@id", asIRI(variable));
             }
 
             @Override
             public Object map(Subject po)
             {
-                //noinspection unchecked
-                return JsonLd.asGraph(po);
+                return JsonLd.asGraph(po, strict);
             }
 
             @Override
             public Object map(Name name)
             {
-                //noinspection unchecked
                 return singletonMap("@id", name.name());
             }
 
@@ -60,7 +71,9 @@ public interface JsonLd
             @Override
             public Object map(InlineFilter inlineFilter)
             {
-                //noinspection unchecked
+                if (strict)
+                    throw new IllegalArgumentException("In-line filter found in conversion to JSON-LD");
+
                 return JsonLd.asGraph(inlineFilter.variable());
             }
         });
@@ -68,12 +81,33 @@ public interface JsonLd
 
     static Map asGraph(Subject po)
     {
+        return asGraph(po, false);
+    }
+
+    static Map asGraph(Subject po, boolean strict) throws IllegalArgumentException
+    {
         final Map<String, Object> graph = new HashMap<>();
         po.id().ifPresent(id -> graph.put("@id", asIRI(id)));
         po.type().ifPresent(type -> graph.put("@type", asIRI(type)));
         po.properties().forEach((identifier, values) -> graph
-            .put(asIRI(identifier), values.stream().map(JsonLd::asGraph).collect(toList())));
+            .put(asIRI(identifier), values.stream().map(value -> JsonLd.asGraph(value, strict)).collect(toList())));
         return graph;
+    }
+
+    static Map asGraph(Group group)
+    {
+        return asGraph(group, false);
+    }
+
+    static Map asGraph(Group group, boolean strict) throws IllegalArgumentException
+    {
+        if (strict && group.filter().isPresent())
+            throw new IllegalArgumentException("Filter found in conversion to JSON-LD");
+
+        return group.graph().map(
+            graph -> singletonMap("@graph", graph.stream()
+                .map(subject -> JsonLd.asGraph(subject, strict)).collect(toList())))
+            .orElse(emptyMap());
     }
 
     static String asIRI(Id id)
