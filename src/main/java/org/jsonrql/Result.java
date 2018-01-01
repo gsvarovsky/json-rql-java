@@ -40,6 +40,9 @@ public interface Result extends Jrql
                 case VALUE_STRING:
                     return Result.result(p.getText());
 
+                case START_OBJECT:
+                    // TODO: Variable assignments, or other object expressions
+
                 default:
                     throw badToken(p, VALUE_STRING);
             }

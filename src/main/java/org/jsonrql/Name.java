@@ -20,12 +20,6 @@ public final class Name implements Id
         this.name = name;
     }
 
-    @JsonValue
-    public String name()
-    {
-        return name;
-    }
-
     @Override
     public void accept(Visitor visitor)
     {
@@ -33,6 +27,7 @@ public final class Name implements Id
     }
 
     @Override
+    @JsonValue
     public String toString()
     {
         return name;

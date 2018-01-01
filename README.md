@@ -20,7 +20,7 @@ select("?p", "?c")
             .type("dbpedia-owl:Artist")
             .with("dbpedia-owl:birthPlace", subject("?c")
                 .with("http://xmlns.com/foaf/0.1/name", literal("York").language("en"))))
-    .prefix("dbpedia-owl", "http://dbpedia.org/ontology/")
+    .context(prefix("dbpedia-owl", "http://dbpedia.org/ontology/"))
 ```
 See the [Jena tests](/src/test/java/org/jsonrql/jena/JsonRqlJenaTest.java) for more examples.
 

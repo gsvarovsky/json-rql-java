@@ -56,7 +56,7 @@ public interface JsonLd
             @Override
             public Object map(Name name)
             {
-                return singletonMap("@id", name.name());
+                return singletonMap("@id", name.toString());
             }
 
             @Override
@@ -123,7 +123,7 @@ public interface JsonLd
             @Override
             public String map(Name name)
             {
-                return name.name();
+                return name.toString();
             }
         });
     }

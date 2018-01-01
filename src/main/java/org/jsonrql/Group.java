@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY;
@@ -11,10 +12,16 @@ import static com.fasterxml.jackson.annotation.JsonFormat.Feature.WRITE_SINGLE_E
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 @JsonDeserialize
-public final class Group implements Pattern
+public final class Group extends Pattern
 {
     private final List<Subject> graph;
     private final List<Expression> filter;
+
+    @Override
+    public final Group context(Map<String, Object> context)
+    {
+        return new Group(context, graph, filter);
+    }
 
     @JsonIgnore
     public Optional<List<Subject>> graph()
@@ -29,9 +36,11 @@ public final class Group implements Pattern
     }
 
     @JsonCreator
-    private Group(@JsonProperty("@graph") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Subject> graph,
+    private Group(@JsonProperty("@context") Map<String, Object> context,
+                  @JsonProperty("@graph") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Subject> graph,
                   @JsonProperty("@filter") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Expression> filter)
     {
+        super(context);
         this.graph = graph;
         this.filter = filter;
     }

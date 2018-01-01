@@ -21,28 +21,30 @@ public interface Jrql
 {
     interface Transform<T>
     {
-        default T map(Star star) { return null; }
-        default T map(Query query) { return null; }
-        default T map(VariableAssignment variableAssignment) { return null; }
-        default T map(Variable variable) { return null; }
-        default T map(Subject subject) { return null; }
-        default T map(Name name) { return null; }
-        default T map(Literal literal) { return null; }
-        default T map(InlineFilter inlineFilter) { return null; }
-        default T map(Group group) { return null; }
+        default T map(Jrql jrql) { return null; }
+        default T map(Star star) { return map((Jrql)star); }
+        default T map(Query query) { return map((Jrql)query); }
+        default T map(VariableAssignment variableAssignment) { return map((Jrql)variableAssignment); }
+        default T map(Variable variable) { return map((Jrql)variable); }
+        default T map(Subject subject) { return map((Jrql)subject); }
+        default T map(Name name) { return map((Jrql)name); }
+        default T map(Literal literal) { return map((Jrql)literal); }
+        default T map(InlineFilter inlineFilter) { return map((Jrql)inlineFilter); }
+        default T map(Group group) { return map((Jrql)group); }
     }
 
     interface Visitor
     {
-        default void visit(Star star) {}
-        default void visit(Query query) {}
-        default void visit(VariableAssignment variableAssignment) {}
-        default void visit(Variable variable) {}
-        default void visit(Subject subject) {}
-        default void visit(Name name) {}
-        default void visit(Literal literal) {}
-        default void visit(InlineFilter inlineFilter) {}
-        default void visit(Group group) {}
+        default void visit(Jrql jrql) {}
+        default void visit(Star star) { visit((Jrql)star); }
+        default void visit(Query query) { visit((Jrql)query); }
+        default void visit(VariableAssignment variableAssignment) { visit((Jrql)variableAssignment); }
+        default void visit(Variable variable) { visit((Jrql)variable); }
+        default void visit(Subject subject) { visit((Jrql)subject); }
+        default void visit(Name name) { visit((Jrql)name); }
+        default void visit(Literal literal) { visit((Jrql)literal); }
+        default void visit(InlineFilter inlineFilter) { visit((Jrql)inlineFilter); }
+        default void visit(Group group) { visit((Jrql)group); }
     }
 
     void accept(Visitor visitor);
@@ -55,6 +57,12 @@ public interface Jrql
         final AtomicReference<T> ref = new AtomicReference<>();
         jrql.accept(new Visitor()
         {
+            @Override
+            public void visit(Jrql jrql)
+            {
+                ref.set(transform.map(jrql));
+            }
+
             @Override
             public void visit(Star star)
             {

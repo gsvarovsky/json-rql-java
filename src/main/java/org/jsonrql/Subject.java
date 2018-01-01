@@ -18,7 +18,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 
 @JsonDeserialize
-public final class Subject implements Pattern, Value
+public final class Subject extends Pattern implements Value
 {
     private final Id id;
     private final Id type;
@@ -26,12 +26,18 @@ public final class Subject implements Pattern, Value
 
     public static Subject subject(Id id)
     {
-        return new Subject(id, null);
+        return new Subject(emptyMap(), id, null);
     }
 
     public static Subject subject(String id)
     {
         return subject(Id.id(id));
+    }
+
+    @Override
+    public final Subject context(Map<String, Object> context)
+    {
+        return new Subject(context, id, type);
     }
 
     @Override
@@ -52,7 +58,7 @@ public final class Subject implements Pattern, Value
 
     public Subject type(Id type)
     {
-        return new Subject(id, type, properties);
+        return new Subject(context(), id, type, properties);
     }
 
     public Subject type(String type)
@@ -76,20 +82,23 @@ public final class Subject implements Pattern, Value
     }
 
     @JsonCreator
-    private Subject(@JsonProperty("@id") Id id, @JsonProperty("@type") Id type)
+    private Subject(@JsonProperty("@context") Map<String, Object> context,
+                    @JsonProperty("@id") Id id,
+                    @JsonProperty("@type") Id type)
     {
-        this(id, type, emptyMap());
+        this(context, id, type, emptyMap());
     }
 
     private Subject(Subject pobj, Id newId, Stream<Value> newValues)
     {
-        this(pobj.id, pobj.type, pobj.properties);
+        this(pobj.context(), pobj.id, pobj.type, pobj.properties);
         properties.computeIfPresent(newId, (id, values) -> valuesList(concat(values.stream(), newValues)));
         properties.computeIfAbsent(newId, id -> valuesList(newValues));
     }
 
-    private Subject(Id id, Id type, Map<Id, List<Value>> properties)
+    private Subject(Map<String, Object> context, Id id, Id type, Map<Id, List<Value>> properties)
     {
+        super(context);
         this.id = id;
         this.type = type;
         this.properties = new HashMap<>(properties);

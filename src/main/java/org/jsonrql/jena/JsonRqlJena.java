@@ -174,7 +174,7 @@ public interface JsonRqlJena
             public String map(Name name)
             {
                 // TODO: This will work for @vocab but not @base, see Query#prefixes
-                return format(name.name().contains(":") ? "%s" : "<%s>", name);
+                return format(name.toString().contains(":") ? "%s" : "<%s>", name);
             }
 
             @Override
