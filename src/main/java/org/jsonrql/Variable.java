@@ -61,14 +61,9 @@ public final class Variable implements Id, Result
     }
 
     @Override
-    public boolean equals(Object obj)
+    public boolean equals(Object o)
     {
-        return obj instanceof Variable && equals((Variable)obj);
-    }
-
-    private boolean equals(Variable that)
-    {
-        return that != null && this.name.equals(that.name);
+        return this == o || o instanceof Variable && this.name.equals(((Variable) o).name);
     }
 
     static Optional<Variable> matchVar(Object value)

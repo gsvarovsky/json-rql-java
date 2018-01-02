@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import java.util.Objects;
+
 @JsonSerialize
 public final class Name implements Id
 {
@@ -31,5 +33,17 @@ public final class Name implements Id
     public String toString()
     {
         return name;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        return this == o || o instanceof Name && Objects.equals(name, ((Name) o).name);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(name);
     }
 }

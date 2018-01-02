@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY;
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED;
@@ -16,6 +17,12 @@ public final class Group extends Pattern
 {
     private final List<Subject> graph;
     private final List<Expression> filter;
+
+    @SafeVarargs
+    public final Group context(Consumer<Map<String, Object>>... modify)
+    {
+        return context(contextWith(modify));
+    }
 
     @Override
     public final Group context(Map<String, Object> context)

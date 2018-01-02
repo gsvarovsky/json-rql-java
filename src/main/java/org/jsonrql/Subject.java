@@ -2,11 +2,11 @@ package org.jsonrql;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.github.jsonldjava.utils.JsonUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY;
@@ -34,10 +34,16 @@ public final class Subject extends Pattern implements Value
         return subject(Id.id(id));
     }
 
+    @SafeVarargs
+    public final Subject context(Consumer<Map<String, Object>>... modify)
+    {
+        return context(contextWith(modify));
+    }
+
     @Override
     public final Subject context(Map<String, Object> context)
     {
-        return new Subject(context, id, type);
+        return new Subject(context, id, type, properties);
     }
 
     @Override
@@ -79,6 +85,31 @@ public final class Subject extends Pattern implements Value
     public Stream<Value> values()
     {
         return properties.values().stream().flatMap(List::stream);
+    }
+
+    public Optional<List<Value>> get(String key)
+    {
+        return Optional.ofNullable(properties.get(Id.id(key)));
+    }
+
+    public Optional<Value> getValue(String key)
+    {
+        return get(key).map(l -> {
+            if (l.size() == 1)
+                return l.get(0);
+            else
+                throw new IndexOutOfBoundsException();
+        });
+    }
+
+    public Optional<Literal> getLiteral(String key)
+    {
+        return getValue(key).map(Literal.class::cast);
+    }
+
+    public Optional<String> getString(String key)
+    {
+        return getLiteral(key).map(Literal::value).map(String.class::cast);
     }
 
     @JsonCreator
@@ -139,5 +170,35 @@ public final class Subject extends Pattern implements Value
     private static List<Value> valuesList(Stream<Value> newValues)
     {
         return unmodifiableList(newValues.collect(toList()));
+    }
+
+    @Override
+    public String toString()
+    {
+        try
+        {
+            return JsonUtils.toPrettyString(this);
+        }
+        catch (IOException e)
+        {
+            throw new AssertionError(e);
+        }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        return this == o || o instanceof Subject &&
+            Objects.equals(id, ((Subject) o).id) &&
+            Objects.equals(type, ((Subject) o).type) &&
+            Objects.equals(properties, ((Subject) o).properties) &&
+            Objects.equals(context(), ((Subject) o).context());
+    }
+
+    @Override
+    public int hashCode()
+    {
+
+        return Objects.hash(id, type, properties);
     }
 }

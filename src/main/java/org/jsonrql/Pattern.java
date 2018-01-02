@@ -29,11 +29,23 @@ public abstract class Pattern implements Jrql
     public abstract Pattern context(Map<String, Object> context);
 
     @SafeVarargs
-    public final Map<String, Object> contextWith(Consumer<Map<String, Object>>... modify)
+    public static Map<String, Object> newContext(Consumer<Map<String, Object>>... modify)
+    {
+        return newContext(emptyMap(), modify);
+    }
+
+    @SafeVarargs
+    public static Map<String, Object> newContext(Map<String, Object> context, Consumer<Map<String, Object>>... modify)
     {
         final Map<String, Object> newContext = new HashMap<>(context);
         stream(modify).forEach(m -> m.accept(newContext));
         return newContext;
+    }
+
+    @SafeVarargs
+    public final Map<String, Object> contextWith(Consumer<Map<String, Object>>... modify)
+    {
+        return newContext(context, modify);
     }
 
     @JsonProperty("@context")

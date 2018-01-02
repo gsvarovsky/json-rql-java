@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -65,6 +66,27 @@ public abstract class Literal implements Value, Expression
     public Object value()
     {
         return value;
+    }
+
+    @Override
+    public String toString()
+    {
+        return value.toString();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        return this == o || o instanceof Literal &&
+            Objects.equals(value, ((Literal) o).value) &&
+            Objects.equals(type(), ((Literal) o).type()) &&
+            Objects.equals(language(), ((Literal) o).language());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(value, type(), language());
     }
 
     public static class Deserializer extends Jrql.Deserializer<Literal>
