@@ -11,12 +11,24 @@ import java.util.function.Consumer;
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY;
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
 
 @JsonDeserialize
 public final class Group extends Pattern
 {
     private final List<Subject> graph;
     private final List<Expression> filter;
+
+    public static Group group(List<Subject> graph)
+    {
+        return new Group(null, graph, null);
+    }
+
+    public static Group group(Subject... graph)
+    {
+        return group(asList(graph));
+    }
 
     @SafeVarargs
     public final Group context(Consumer<Map<String, Object>>... modify)
@@ -42,14 +54,22 @@ public final class Group extends Pattern
         return Optional.ofNullable(filter);
     }
 
+    public Group filter(List<Expression> filter) {
+        return new Group(context(), graph, filter);
+    }
+
+    public Group filter(Expression... filter) {
+        return filter(asList(filter));
+    }
+
     @JsonCreator
     private Group(@JsonProperty("@context") Map<String, Object> context,
                   @JsonProperty("@graph") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Subject> graph,
                   @JsonProperty("@filter") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Expression> filter)
     {
         super(context);
-        this.graph = graph;
-        this.filter = filter;
+        this.graph = graph == null ? null : unmodifiableList(graph);
+        this.filter = filter == null ? null : unmodifiableList(filter);
     }
 
     @SuppressWarnings("unused")

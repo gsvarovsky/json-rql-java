@@ -19,6 +19,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toMap;
+import static org.jsonrql.Group.group;
 import static org.jsonrql.Keywords.KEYWORDS;
 
 @JsonDeserialize(using = Pattern.Deserializer.class)
@@ -109,6 +110,10 @@ public abstract class Pattern implements Jrql
                         fieldsOf(node).anyMatch(KEYWORDS.clauses::containsKey) ? Query.class
                             : fieldsOf(node).anyMatch(KEYWORDS.groupPatterns::containsKey) ? Group.class
                             : Subject.class);
+
+                case START_ARRAY:
+                    // Create a group
+                    return group(ctxt.readValue(p, Subject[].class));
 
                 default:
                     throw badToken(p, START_OBJECT);
