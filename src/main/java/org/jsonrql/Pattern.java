@@ -82,6 +82,11 @@ public abstract class Pattern implements Jrql
 
     public Name resolve(Name name)
     {
+        return resolve(context, name);
+    }
+
+    public static Name resolve(Map<String, Object> context, Name name)
+    {
         return context.containsKey("@base") ?
             Name.name(URI.create(context.get("@base").toString()).resolve(name.toString()).toString()) : name;
     }
