@@ -44,14 +44,17 @@ public final class Query extends Pattern
 
     public static Query select(Result... select)
     {
-        return new Query(null, asList(select), null, null, null, null, null, emptyList(), null, null, null);
+        return select(asList(select));
+    }
+
+    public static Query select(List<Result> select)
+    {
+        return new Query(null, select, null, null, null, null, null, emptyList(), null, null, null);
     }
 
     public static Query select(String... select)
     {
-        return new Query(null, stream(select).map(Result::result).collect(toList()), null, null, null, null, null,
-                         emptyList(),
-                         null, null, null);
+        return select(stream(select).map(Result::result).collect(toList()));
     }
 
     @JsonIgnore
@@ -62,12 +65,17 @@ public final class Query extends Pattern
 
     public static Query distinct(Result... distinct)
     {
-        return new Query(null, null, asList(distinct), null, null, null, null, emptyList(), null, null, null);
+        return distinct(asList(distinct));
+    }
+
+    public static Query distinct(List<Result> distinct)
+    {
+        return new Query(null, null, distinct, null, null, null, null, emptyList(), null, null, null);
     }
 
     public static Query distinct(String... distinct)
     {
-        return new Query(null, null, stream(distinct).map(Result::result).collect(toList()), null, null, null, null, emptyList(), null, null, null);
+        return distinct(stream(distinct).map(Result::result).collect(toList()));
     }
 
     @JsonIgnore
@@ -89,7 +97,12 @@ public final class Query extends Pattern
 
     public static Query construct(Subject... construct)
     {
-        return new Query(null, null, null, null, asList(construct), null, null, emptyList(), null, null, null);
+        return construct(asList(construct));
+    }
+
+    public static Query construct(List<Subject> construct)
+    {
+        return new Query(null, null, null, null, construct, null, null, emptyList(), null, null, null);
     }
 
     @JsonIgnore
@@ -116,7 +129,12 @@ public final class Query extends Pattern
 
     public static Query delete(Subject... delete)
     {
-        return new Query(null, null, null, null, null, null, asList(delete), emptyList(), null, null, null);
+        return delete(asList(delete));
+    }
+
+    public static Query delete(List<Subject> delete)
+    {
+        return new Query(null, null, null, null, null, null, delete, emptyList(), null, null, null);
     }
 
     @JsonIgnore
@@ -127,7 +145,12 @@ public final class Query extends Pattern
 
     public Query where(Pattern... where)
     {
-        return new Query(context(), select, distinct, describe, construct, insert, delete, asList(where), orderBy, limit, offset);
+        return where(asList(where));
+    }
+
+    public Query where(List<Pattern> where)
+    {
+        return new Query(context(), select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
     }
 
     @JsonIgnore
@@ -138,13 +161,17 @@ public final class Query extends Pattern
 
     public Query orderBy(Expression... orderBy)
     {
-        return new Query(context(), select, distinct, describe, construct, insert, delete, where, asList(orderBy), limit, offset);
+        return orderBy(asList(orderBy));
+    }
+
+    public Query orderBy(List<Expression> orderBy)
+    {
+        return new Query(context(), select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
     }
 
     public Query orderBy(String... orderBy)
     {
-        return new Query(context(), select, distinct, describe, construct, insert, delete, where,
-                         stream(orderBy).map(Expression::expression).collect(toList()), limit, offset);
+        return orderBy(stream(orderBy).map(Expression::expression).collect(toList()));
     }
 
     @JsonIgnore
