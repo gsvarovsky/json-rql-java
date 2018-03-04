@@ -12,8 +12,10 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
+import static com.fasterxml.jackson.core.JsonToken.START_ARRAY;
 import static com.fasterxml.jackson.core.JsonToken.START_OBJECT;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyMap;
@@ -56,19 +58,34 @@ public abstract class Pattern implements Jrql
         return context;
     }
 
-    public static Consumer<Map<String, Object>> base(String base)
+    public static Consumer<Map<String, Object>> base(Object base)
     {
-        return context -> context.put("@base", base);
+        return context -> context.put("@base", base.toString());
     }
 
-    public static Consumer<Map<String, Object>> vocab(String vocab)
+    public static Consumer<Map<String, Object>> vocab(Object vocab)
     {
-        return context -> context.put("@vocab", vocab);
+        return context -> context.put("@vocab", vocab.toString());
     }
 
-    public static Consumer<Map<String, Object>> prefix(String pre, String expanded)
+    public static Consumer<Map<String, Object>> prefix(String pre, Object expanded)
     {
-        return context -> context.put(pre, expanded);
+        return context -> context.put(pre, expanded.toString());
+    }
+
+    public static Consumer<Map<String, Object>> base(Supplier<?> base)
+    {
+        return context -> context.computeIfAbsent("@base", k -> base.get().toString());
+    }
+
+    public static Consumer<Map<String, Object>> vocab(Supplier<?> vocab)
+    {
+        return context -> context.computeIfAbsent("@vocab", k -> vocab.get().toString());
+    }
+
+    public static Consumer<Map<String, Object>> prefix(String pre, Supplier<?> expanded)
+    {
+        return context -> context.computeIfAbsent(pre, k -> expanded.get().toString());
     }
 
     @JsonIgnore
@@ -116,7 +133,7 @@ public abstract class Pattern implements Jrql
                     return group(ctxt.readValue(p, Subject[].class));
 
                 default:
-                    throw badToken(p, START_OBJECT);
+                    throw badToken(p, START_OBJECT, START_ARRAY);
             }
         }
     }
