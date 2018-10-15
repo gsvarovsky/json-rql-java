@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/gsvarovsky/json-rql-java.svg?branch=master)](https://travis-ci.org/gsvarovsky/json-rql-java)
+![stability-wip](https://img.shields.io/badge/stability-work_in_progress-lightgrey.svg)
 
 # json-rql-java
 Java library for the 
