@@ -8,10 +8,9 @@ package org.jsonrql;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY;
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED;
@@ -22,6 +21,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
+@SuppressWarnings("unused")
 @JsonDeserialize
 public final class Query extends Pattern
 {
@@ -35,14 +35,7 @@ public final class Query extends Pattern
     private final List<Expression> orderBy;
     private final Integer limit, offset;
 
-    @SafeVarargs
-    public final Query context(Consumer<Map<String, Object>>... modify)
-    {
-        return context(contextWith(modify));
-    }
-
-    @Override
-    public Query context(Map<String, Object> context)
+    @Override public Query context(Context context)
     {
         return new Query(context, select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
     }
@@ -132,6 +125,13 @@ public final class Query extends Pattern
         return Optional.ofNullable(insert);
     }
 
+    public Query andInsert(Subject... insert)
+    {
+        final List<Subject> newInsert = new ArrayList<>(this.insert);
+        newInsert.addAll(asList(insert));
+        return new Query(context, select, distinct, describe, construct, newInsert, delete, where, orderBy, limit, offset);
+    }
+
     public static Query delete(Subject... delete)
     {
         return delete(asList(delete));
@@ -140,6 +140,13 @@ public final class Query extends Pattern
     public static Query delete(List<Subject> delete)
     {
         return new Query(null, null, null, null, null, null, delete, emptyList(), null, null, null);
+    }
+
+    public Query andDelete(Subject... delete)
+    {
+        final List<Subject> newDelete = new ArrayList<>(this.delete);
+        newDelete.addAll(asList(delete));
+        return new Query(context, select, distinct, describe, construct, insert, newDelete, where, orderBy, limit, offset);
     }
 
     @JsonIgnore
@@ -155,7 +162,7 @@ public final class Query extends Pattern
 
     public Query where(List<Pattern> where)
     {
-        return new Query(context(), select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
+        return new Query(context, select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
     }
 
     @JsonIgnore
@@ -171,7 +178,7 @@ public final class Query extends Pattern
 
     public Query orderBy(List<Expression> orderBy)
     {
-        return new Query(context(), select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
+        return new Query(context, select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
     }
 
     public Query orderBy(String... orderBy)
@@ -187,7 +194,7 @@ public final class Query extends Pattern
 
     public Query limit(int limit)
     {
-        return new Query(context(), select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
+        return new Query(context, select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
     }
 
     @JsonIgnore
@@ -198,7 +205,7 @@ public final class Query extends Pattern
 
     public Query offset(int offset)
     {
-        return new Query(context(), select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
+        return new Query(context, select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
     }
 
     @JsonProperty("@where")
@@ -216,7 +223,7 @@ public final class Query extends Pattern
 
     @JsonCreator
     private Query(
-        @JsonProperty("@context") Map<String, Object> context,
+        @JsonProperty("@context") Context context,
         @JsonProperty("@select") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Result> select,
         @JsonProperty("@distinct") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Result> distinct,
         @JsonProperty("@describe") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Id> describe,

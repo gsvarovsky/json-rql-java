@@ -11,7 +11,6 @@ import com.github.jsonldjava.utils.JsonUtils;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY;
@@ -22,7 +21,7 @@ import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 
-@JsonDeserialize
+@SuppressWarnings("WeakerAccess") @JsonDeserialize
 public final class Subject extends Pattern implements Value
 {
     private final Id id;
@@ -31,7 +30,7 @@ public final class Subject extends Pattern implements Value
 
     public static Subject subject(Id id)
     {
-        return new Subject(emptyMap(), id, null);
+        return new Subject((Context)null, id, null);
     }
 
     public static Subject subject(String id)
@@ -39,14 +38,7 @@ public final class Subject extends Pattern implements Value
         return subject(Id.id(id));
     }
 
-    @SafeVarargs
-    public final Subject context(Consumer<Map<String, Object>>... modify)
-    {
-        return context(contextWith(modify));
-    }
-
-    @Override
-    public final Subject context(Map<String, Object> context)
+    @Override public Subject context(Context context)
     {
         return new Subject(context, id, type, properties);
     }
@@ -62,6 +54,11 @@ public final class Subject extends Pattern implements Value
         return Optional.ofNullable(id);
     }
 
+    public Subject id(Id id)
+    {
+        return new Subject(context, id, type, properties);
+    }
+
     public Optional<Id> type()
     {
         return Optional.ofNullable(type);
@@ -69,7 +66,7 @@ public final class Subject extends Pattern implements Value
 
     public Subject type(Id type)
     {
-        return new Subject(context(), id, type, properties);
+        return new Subject(context, id, type, properties);
     }
 
     public Subject type(String type)
@@ -85,6 +82,11 @@ public final class Subject extends Pattern implements Value
     public Subject with(String key, Value... values)
     {
         return new Subject(this, Id.id(key), stream(values));
+    }
+
+    public Subject with(Id key, Value... values)
+    {
+        return new Subject(this, key, stream(values));
     }
 
     public Stream<Value> values()
@@ -118,7 +120,7 @@ public final class Subject extends Pattern implements Value
     }
 
     @JsonCreator
-    private Subject(@JsonProperty("@context") Map<String, Object> context,
+    private Subject(@JsonProperty("@context") Context context,
                     @JsonProperty("@id") Id id,
                     @JsonProperty("@type") Id type)
     {
@@ -127,12 +129,12 @@ public final class Subject extends Pattern implements Value
 
     private Subject(Subject pobj, Id newId, Stream<Value> newValues)
     {
-        this(pobj.context(), pobj.id, pobj.type, pobj.properties);
+        this(pobj.context, pobj.id, pobj.type, pobj.properties);
         properties.computeIfPresent(newId, (id, values) -> valuesList(concat(values.stream(), newValues)));
         properties.computeIfAbsent(newId, id -> valuesList(newValues));
     }
 
-    private Subject(Map<String, Object> context, Id id, Id type, Map<Id, List<Value>> properties)
+    private Subject(Context context, Id id, Id type, Map<Id, List<Value>> properties)
     {
         super(context);
         this.id = id;
@@ -194,10 +196,10 @@ public final class Subject extends Pattern implements Value
     public boolean equals(Object o)
     {
         return this == o || o instanceof Subject &&
-            Objects.equals(id, ((Subject) o).id) &&
-            Objects.equals(type, ((Subject) o).type) &&
-            Objects.equals(properties, ((Subject) o).properties) &&
-            Objects.equals(context(), ((Subject) o).context());
+            Objects.equals(id, ((Subject)o).id) &&
+            Objects.equals(type, ((Subject)o).type) &&
+            Objects.equals(properties, ((Subject)o).properties) &&
+            Objects.equals(context, ((Subject)o).context);
     }
 
     @Override

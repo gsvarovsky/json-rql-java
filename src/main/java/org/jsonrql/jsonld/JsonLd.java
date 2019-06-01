@@ -11,8 +11,7 @@ import org.jsonrql.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.singletonMap;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 
 public interface JsonLd
@@ -141,5 +140,26 @@ public interface JsonLd
     static String unhide(String value)
     {
         return isHiddenVar(value) ? value.substring(HIDDEN_VAR_PREFIX.length()) : value;
+    }
+
+    static Map<String, Object> asJsonLd(Context context)
+    {
+        final HashMap<String, Object> asMap = new HashMap<>();
+        context.base().ifPresent(base -> asMap.put("@base", base.toString()));
+        context.vocab().ifPresent(vocab -> asMap.put("@vocab", vocab.toString()));
+        context.language().ifPresent(lang -> asMap.put("@language", lang));
+        context.names().forEach((name, termDef) -> asMap.put(name.toString(), asJsonLd(termDef)));
+        return asMap;
+    }
+
+    static Object asJsonLd(Context.TermDef termDef)
+    {
+        final HashMap<String, Object> asMap = new HashMap<>();
+        termDef.id().ifPresent(id -> asMap.put("@id", id.toString()));
+        termDef.container().ifPresent(container -> asMap.put("@container", container.tag()));
+        termDef.reverse().ifPresent(reverse -> asMap.put("@reverse", asJsonLd(reverse)));
+        termDef.type().ifPresent(type -> asMap.put("@type", type.toString()));
+        termDef.language().ifPresent(lang -> asMap.put("@language", lang));
+        return asMap.keySet().equals(singleton("@id")) ? asMap.get("@id") : asMap;
     }
 }

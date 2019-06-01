@@ -9,6 +9,7 @@ import org.apache.jena.query.QueryFactory;
 import org.jsonrql.Subject;
 import org.junit.jupiter.api.Test;
 
+import static org.jsonrql.Context.context;
 import static org.jsonrql.Id.id;
 import static org.jsonrql.InlineFilter.filter;
 import static org.jsonrql.Literal.literal;
@@ -53,7 +54,7 @@ class JsonRqlJenaTest
                             .type("dbpedia-owl:Artist")
                             .with("dbpedia-owl:birthPlace", subject("?c")
                                 .with("http://xmlns.com/foaf/0.1/name", literal("York").language("en"))))
-                    .context(prefix("dbpedia-owl", "http://dbpedia.org/ontology/"))));
+                    .context(context().prefix("dbpedia-owl", "http://dbpedia.org/ontology/"))));
     }
 
     @Test
@@ -90,9 +91,9 @@ class JsonRqlJenaTest
                                     .with("rdfs:label", literal("Belgium").language("en")))
                                 .with("rdfs:label", id("?cityName"), literal("Ghent").language("en")))
                             .with("rdfs:label", "?name"))
-                    .context(prefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#"),
-                             prefix("dbpedia", "http://dbpedia.org/resource/"),
-                             prefix("dbpedia-owl", "http://dbpedia.org/ontology/"))));
+                    .context(context().prefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
+                                 .prefix("dbpedia", "http://dbpedia.org/resource/")
+                                 .prefix("dbpedia-owl", "http://dbpedia.org/ontology/"))));
     }
 
     @Test

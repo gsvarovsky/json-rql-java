@@ -41,7 +41,7 @@ public interface JsonRqlJena
     static Query toSparql(org.jsonrql.Query jrqlQuery)
     {
         final Query query = new Query();
-        final PrefixMapping prefixes = PrefixMapping.Factory.create().setNsPrefixes(jrqlQuery.prefixes());
+        final PrefixMapping prefixes = PrefixMapping.Factory.create().setNsPrefixes(jrqlQuery.context().prefixes());
 
         jrqlQuery.select().ifPresent(select -> addSelectResults(query, select));
         jrqlQuery.distinct().ifPresent(distinct -> {
@@ -52,7 +52,7 @@ public interface JsonRqlJena
             query.setQueryConstructType();
             query.setConstructTemplate(new Template(JsonRqlJena.asPattern(
                 construct.stream().map(JsonLd::asGraph).collect(toList()),
-                jrqlQuery.context())));
+                asJsonLd(jrqlQuery.context()))));
         });
         final ElementGroup group = new ElementGroup(); // Jena always has a group at top level
         jrqlQuery.where().forEach(pattern -> pattern.accept(new Jrql.Visitor()
@@ -61,7 +61,7 @@ public interface JsonRqlJena
             public void visit(Subject subject)
             {
                 group.addElement(new ElementPathBlock(
-                    JsonRqlJena.asPattern(asGraph(subject), jrqlQuery.context())));
+                    JsonRqlJena.asPattern(asGraph(subject), asJsonLd(jrqlQuery.context()))));
 
                 // Pull out any in-line filters recursively
                 subject.values().forEach(this::extractFilters);

@@ -144,12 +144,7 @@ public interface Jrql
 
         static JsonMappingException badToken(JsonParser p, JsonToken... allowedTokens)
         {
-            return badMapping(p, "Expected one of %s", asList(allowedTokens));
-        }
-
-        static JsonMappingException badMapping(JsonParser p, String msg, Object... args)
-        {
-            return new JsonMappingException(p, format(msg, args));
+            return new JsonMappingException(p, format("Expected one of %s", asList(allowedTokens)));
         }
     }
 }

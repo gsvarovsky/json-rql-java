@@ -36,7 +36,7 @@ public final class InlineFilter implements Value
     @JsonCreator
     private InlineFilter(@JsonProperty("@id") Variable variable)
     {
-        this.variable = variable == null ? Variable.generate() : variable;
+        this.variable = variable == null ? Variable.any() : variable;
         this.filters = new HashMap<>();
     }
 

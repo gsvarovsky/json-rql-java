@@ -23,9 +23,14 @@ public final class Variable implements Id, Result
 
     private final String name;
 
-    public static Variable generate()
+    public static Variable any()
     {
-        return new Variable("?" + randomAlphanumeric(4));
+        return var(randomAlphanumeric(4));
+    }
+
+    public static Variable var(String id)
+    {
+        return new Variable("?" + id);
     }
 
     @JsonCreator
