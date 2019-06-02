@@ -38,11 +38,11 @@ public abstract class JsonRqlJenaBuilder<T>
 
     abstract T build();
 
-    Optional<Element> whereElement()
+    Optional<Element> whereElement(boolean alwaysGroup)
     {
         final ElementGroup group = new ElementGroup();
         jrql.where().forEach(pattern -> addWhereTo(pattern, group));
-        return group.isEmpty() ? Optional.empty() : Optional.of(group.size() == 1 ? group.getLast() : group);
+        return group.isEmpty() ? Optional.empty() : Optional.of(group.size() > 1 || alwaysGroup ? group : group.getLast());
     }
 
     private void addWhereTo(Pattern pattern, ElementGroup group)

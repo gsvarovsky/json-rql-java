@@ -45,7 +45,7 @@ public class JsonRqlJenaUpdateBuilder extends JsonRqlJenaBuilder<UpdateRequest>
             final UpdateModify updateModify = new UpdateModify();
             insert = updateModify.getInsertAcc();
             delete = updateModify.getDeleteAcc();
-            whereElement().ifPresent(updateModify::setElement);
+            whereElement(false).ifPresent(updateModify::setElement);
             update = updateModify;
         }
 

@@ -37,7 +37,8 @@ public class JsonRqlJenaQueryBuilder extends JsonRqlJenaBuilder<Query>
         jrql.distinct().ifPresent(this::addDistinctResults);
         jrql.construct().ifPresent(this::addConstruct);
         jrql.describe().ifPresent(this::addDescribe);
-        whereElement().ifPresent(query::setQueryPattern);
+        // A query must always have an element group at the top level
+        whereElement(true).ifPresent(query::setQueryPattern);
         jrql.orderBy().ifPresent(this::setOrderBy);
         jrql.limit().ifPresent(query::setLimit);
         jrql.offset().ifPresent(query::setOffset);
