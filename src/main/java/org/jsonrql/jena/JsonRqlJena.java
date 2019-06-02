@@ -7,22 +7,15 @@ package org.jsonrql.jena;
 
 import com.github.jsonldjava.utils.JsonUtils;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Node_Variable;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFParser;
-import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.BasicPattern;
-import org.apache.jena.sparql.sse.SSE;
-import org.apache.jena.sparql.syntax.ElementFilter;
-import org.apache.jena.sparql.syntax.ElementGroup;
-import org.apache.jena.sparql.syntax.ElementPathBlock;
-import org.apache.jena.sparql.syntax.Template;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.update.UpdateRequest;
 import org.jsonrql.*;
-import org.jsonrql.Result.Star;
-import org.jsonrql.jsonld.JsonLd;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,95 +23,20 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static org.apache.jena.riot.Lang.JSONLD;
-import static org.jsonrql.Keywords.KEYWORDS;
-import static org.jsonrql.jsonld.JsonLd.*;
+import static org.jsonrql.jsonld.JsonLd.isHiddenVar;
+import static org.jsonrql.jsonld.JsonLd.unhide;
 
 public interface JsonRqlJena
 {
-    static Query toSparql(org.jsonrql.Query jrqlQuery)
+    static Query asSparqlQuery(org.jsonrql.Query jrql)
     {
-        final Query query = new Query();
-        final PrefixMapping prefixes = PrefixMapping.Factory.create().setNsPrefixes(jrqlQuery.context().prefixes());
-
-        jrqlQuery.select().ifPresent(select -> addSelectResults(query, select));
-        jrqlQuery.distinct().ifPresent(distinct -> {
-            addSelectResults(query, distinct);
-            query.setDistinct(true);
-        });
-        jrqlQuery.construct().ifPresent(construct -> {
-            query.setQueryConstructType();
-            query.setConstructTemplate(new Template(JsonRqlJena.asPattern(
-                construct.stream().map(JsonLd::asGraph).collect(toList()),
-                asJsonLd(jrqlQuery.context()))));
-        });
-        final ElementGroup group = new ElementGroup(); // Jena always has a group at top level
-        jrqlQuery.where().forEach(pattern -> pattern.accept(new Jrql.Visitor()
-        {
-            @Override
-            public void visit(Subject subject)
-            {
-                group.addElement(new ElementPathBlock(
-                    JsonRqlJena.asPattern(asGraph(subject), asJsonLd(jrqlQuery.context()))));
-
-                // Pull out any in-line filters recursively
-                subject.values().forEach(this::extractFilters);
-            }
-
-            // Mysteriously, this method cannot be in-lined due to an IllegalAccessError in the hotspot compiler
-            // http://hg.openjdk.java.net/jdk8u/jdk8u/hotspot/rev/0b85ccd62409#l11.80
-            void extractFilters(Value value)
-            {
-                value.accept(new Jrql.Visitor()
-                {
-                    @Override
-                    public void visit(Subject subject)
-                    {
-                        subject.values().forEach(value -> value.accept(this));
-                    }
-
-                    @Override
-                    public void visit(InlineFilter inlineFilter)
-                    {
-                        inlineFilter.filters().entrySet().stream()
-                            .map(opRhs -> format("(%s %s %s)",
-                                                 KEYWORDS.operators.get(opRhs.getKey()).sparql,
-                                                 inlineFilter.variable(),
-                                                 // TODO: This will probably break with @in
-                                                 opRhs.getValue().stream()
-                                                     .map(JsonRqlJena::asExpr).collect(joining(" "))))
-                            .forEach(expr -> group.addElement(new ElementFilter(SSE.parseExpr(expr, prefixes))));
-                    }
-                });
-            }
-        }));
-        query.setQueryPattern(group);
-        jrqlQuery.orderBy().ifPresent(orderBy -> orderBy.forEach(
-            e -> query.addOrderBy(SSE.parseExpr(asExpr(e), prefixes), -2/*TODO*/)));
-        jrqlQuery.limit().ifPresent(query::setLimit);
-        jrqlQuery.offset().ifPresent(query::setOffset);
-        return query;
+        return new JsonRqlJenaQueryBuilder(jrql).build();
     }
 
-    static void addSelectResults(Query query, List<Result> select)
+    static UpdateRequest asSparqlUpdate(org.jsonrql.Query jrql)
     {
-        query.setQuerySelectType();
-        select.forEach(result -> result.accept(new Jrql.Visitor()
-        {
-            @Override
-            public void visit(Star star)
-            {
-                query.setQueryResultStar(true);
-            }
-
-            @Override
-            public void visit(Variable variable)
-            {
-                query.addResultVar(variable.name());
-            }
-        }));
+        return new JsonRqlJenaUpdateBuilder(jrql).build();
     }
 
     static BasicPattern asPattern(List graph, Map context)
@@ -162,7 +80,7 @@ public interface JsonRqlJena
 
     static Node unhideVar(Node node)
     {
-        return node.isURI() && isHiddenVar(node.getURI()) ? new Node_Variable(unhide(node.getURI())) : node;
+        return node.isURI() && isHiddenVar(node.getURI()) ? Var.alloc(unhide(node.getURI())) : node;
     }
 
     static String asExpr(Expression expression)
@@ -192,5 +110,4 @@ public interface JsonRqlJena
             }
         });
     }
-
 }

@@ -21,6 +21,9 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * TODO: Separate SPARQL query forms from SPARQL update forms
+ */
 @SuppressWarnings("unused")
 @JsonDeserialize
 public final class Query extends Pattern
@@ -85,6 +88,11 @@ public final class Query extends Pattern
     public static Query describe(Id... describe)
     {
         return new Query(null, null, null, asList(describe), null, null, null, emptyList(), null, null, null);
+    }
+
+    public static Query describe(String... describe)
+    {
+        return describe(stream(describe).map(Id::id).toArray(Id[]::new));
     }
 
     @JsonIgnore

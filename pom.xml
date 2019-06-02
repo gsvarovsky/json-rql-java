@@ -17,6 +17,7 @@
     <properties>
         <json-rql.version>0.3.2</json-rql.version>
         <junit-jupiter-api.version>5.0.2</junit-jupiter-api.version>
+        <jena.version>3.11.0</jena.version>
     </properties>
 
     <dependencies>
@@ -28,12 +29,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.8</version>
+            <version>2.9.9</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-arq</artifactId>
-            <version>3.6.0</version>
+            <version>${jena.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
