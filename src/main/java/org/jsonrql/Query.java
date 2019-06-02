@@ -135,7 +135,7 @@ public final class Query extends Pattern
 
     public Query andInsert(Subject... insert)
     {
-        final List<Subject> newInsert = new ArrayList<>(this.insert);
+        final List<Subject> newInsert = this.insert == null ? new ArrayList<>() : new ArrayList<>(this.insert);
         newInsert.addAll(asList(insert));
         return new Query(context, select, distinct, describe, construct, newInsert, delete, where, orderBy, limit, offset);
     }
@@ -152,7 +152,7 @@ public final class Query extends Pattern
 
     public Query andDelete(Subject... delete)
     {
-        final List<Subject> newDelete = new ArrayList<>(this.delete);
+        final List<Subject> newDelete = this.delete == null ? new ArrayList<>() : new ArrayList<>(this.delete);
         newDelete.addAll(asList(delete));
         return new Query(context, select, distinct, describe, construct, insert, newDelete, where, orderBy, limit, offset);
     }
@@ -170,7 +170,9 @@ public final class Query extends Pattern
 
     public Query where(List<Pattern> where)
     {
-        return new Query(context, select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
+        final List<Pattern> newWhere = new ArrayList<>(this.where);
+        newWhere.addAll(where);
+        return new Query(context, select, distinct, describe, construct, insert, delete, newWhere, orderBy, limit, offset);
     }
 
     @JsonIgnore
