@@ -7,9 +7,7 @@ package org.jsonrql;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.github.jsonldjava.utils.JsonUtils;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -177,19 +175,6 @@ public final class Subject extends Pattern implements Value
     private static List<Value> valuesList(Stream<Value> newValues)
     {
         return unmodifiableList(newValues.collect(toList()));
-    }
-
-    @Override
-    public String toString()
-    {
-        try
-        {
-            return JsonUtils.toPrettyString(this);
-        }
-        catch (IOException e)
-        {
-            throw new AssertionError(e);
-        }
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.github.jsonldjava.utils.JsonUtils;
 
 import java.io.IOException;
 
@@ -41,6 +42,19 @@ public abstract class Pattern implements Jrql
     public Context getContext()
     {
         return context;
+    }
+
+    @Override
+    public String toString()
+    {
+        try
+        {
+            return JsonUtils.toPrettyString(this);
+        }
+        catch (IOException e)
+        {
+            throw new AssertionError(e);
+        }
     }
 
     static class Deserializer extends Jrql.Deserializer<Pattern>
