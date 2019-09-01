@@ -11,20 +11,20 @@
 
     <groupId>org.json-rql</groupId>
     <artifactId>json-rql-java</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
     <packaging>jar</packaging>
 
     <properties>
         <json-rql.version>0.3.2</json-rql.version>
         <junit-jupiter-api.version>5.0.2</junit-jupiter-api.version>
-        <jena.version>3.11.0</jena.version>
+        <jena.version>3.12.0</jena.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.github.jsonld-java</groupId>
             <artifactId>jsonld-java</artifactId>
-            <version>0.11.1</version>
+            <version>0.12.3</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
