@@ -90,6 +90,11 @@ public final class Context
 
         public abstract TermDef container(ContainerType container);
 
+        public TermDef isId()
+        {
+            return type(name("@id"));
+        }
+
         public static class Deserializer extends Jrql.Deserializer<TermDef>
         {
             @Override
@@ -248,6 +253,11 @@ public final class Context
         return new TermId(id);
     }
 
+    public static TermDef termDef(String id)
+    {
+        return termDef(name(id));
+    }
+
     public Context language(String language)
     {
         return new Context(language, base, vocab, names);
@@ -287,7 +297,7 @@ public final class Context
 
     public Context prefix(String name, String id)
     {
-        return with(name, termDef(name(id)));
+        return with(name, termDef(id));
     }
 
     public Context with(Context other)
