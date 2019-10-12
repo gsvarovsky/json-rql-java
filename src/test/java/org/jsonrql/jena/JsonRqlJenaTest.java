@@ -10,16 +10,19 @@ import org.apache.jena.update.UpdateFactory;
 import org.jsonrql.Subject;
 import org.junit.jupiter.api.Test;
 
+import static org.jsonrql.Construct.construct;
 import static org.jsonrql.Context.context;
+import static org.jsonrql.Describe.describe;
+import static org.jsonrql.Distinct.distinct;
 import static org.jsonrql.Id.id;
 import static org.jsonrql.InlineFilter.filter;
 import static org.jsonrql.Literal.literal;
-import static org.jsonrql.Query.*;
 import static org.jsonrql.Result.STAR;
+import static org.jsonrql.Select.select;
 import static org.jsonrql.Subject.subject;
+import static org.jsonrql.Update.delete;
 import static org.jsonrql.Variable.var;
-import static org.jsonrql.jena.JsonRqlJena.asSparqlQuery;
-import static org.jsonrql.jena.JsonRqlJena.asSparqlUpdate;
+import static org.jsonrql.jena.JsonRqlJena.asSparql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JsonRqlJenaTest
@@ -27,31 +30,31 @@ class JsonRqlJenaTest
     @Test void testSelectAll()
     {
         assertEquals(QueryFactory.create("SELECT * WHERE { ?s  ?p  ?o}"),
-                     asSparqlQuery(select(STAR).where(subject("?s").with("?p", "?o"))));
+                     asSparql(select(STAR).where(subject("?s").with("?p", "?o"))));
     }
 
     @Test void testConstruct()
     {
         final Subject subject = subject("?s").with("?p", "?o");
         assertEquals(QueryFactory.create("CONSTRUCT { ?s  ?p  ?o} WHERE { ?s  ?p  ?o}"),
-                     asSparqlQuery(construct(subject).where(subject)));
+                     asSparql(construct(subject).where(subject)));
     }
 
     @Test void testDescribeName()
     {
-        assertEquals(QueryFactory.create("DESCRIBE <meld:fred>"), asSparqlQuery(describe("meld:fred")));
+        assertEquals(QueryFactory.create("DESCRIBE <meld:fred>"), asSparql(describe("meld:fred")));
     }
 
     @Test void testDeleteNameOnly()
     {
         assertEquals(UpdateFactory.create("DELETE WHERE {}").toString(),
-                     asSparqlUpdate(delete(subject("meld:fred"))).toString());
+                     asSparql(delete(subject("meld:fred"))).toString());
     }
 
     @Test void testDeleteSubject()
     {
         assertEquals(UpdateFactory.create("DELETE WHERE {<meld:fred> ?p ?o}").toString(),
-                     asSparqlUpdate(delete(subject("meld:fred").with(var("p"), var("o")))).toString());
+                     asSparql(delete(subject("meld:fred").with(var("p"), var("o")))).toString());
     }
 
     @Test void testExample()
@@ -64,7 +67,7 @@ class JsonRqlJenaTest
                     "    ?p  <http://dbpedia.org/ontology/birthPlace>  ?c ;\n" +
                     "        a                     <http://dbpedia.org/ontology/Artist>\n" +
                     "  }"),
-            asSparqlQuery(
+            asSparql(
                 select("?p", "?c")
                     .where(
                         subject("?p")
@@ -93,7 +96,7 @@ class JsonRqlJenaTest
                     "              <http://dbpedia.org/ontology/country>  ?country .\n" +
                     "    ?country  <http://www.w3.org/2000/01/rdf-schema#label>  \"Belgium\"@en\n" +
                     "  }\n"),
-            asSparqlQuery(
+            asSparql(
                 construct(
                     subject("?person")
                         .type("dbpedia-owl:Artist")
@@ -127,7 +130,7 @@ class JsonRqlJenaTest
                     "  }\n" +
                     "ORDER BY ?label\n" +
                     "LIMIT   10"),
-            asSparqlQuery(
+            asSparql(
                 distinct("?product", "?label")
                     .where(
                         subject("?product")

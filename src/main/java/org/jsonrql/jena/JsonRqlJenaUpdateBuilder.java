@@ -11,7 +11,6 @@ import org.apache.jena.sparql.modify.request.UpdateModify;
 import org.apache.jena.update.Update;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
-import org.jsonrql.Query;
 import org.jsonrql.Subject;
 
 import java.util.List;
@@ -23,16 +22,19 @@ public class JsonRqlJenaUpdateBuilder extends JsonRqlJenaBuilder<UpdateRequest>
 {
     private final UpdateRequest updateRequest = UpdateFactory.create();
 
-    JsonRqlJenaUpdateBuilder(Query jrql)
+    private final org.jsonrql.Update jrqlUpdate;
+
+    JsonRqlJenaUpdateBuilder(org.jsonrql.Update jrqlUpdate)
     {
-        super(jrql);
+        super(jrqlUpdate);
+        this.jrqlUpdate = jrqlUpdate;
     }
 
     @Override public UpdateRequest build()
     {
         final Update update;
         final QuadAcc insert, delete;
-        if (jrql.delete().isPresent() && !jrql.insert().isPresent() && jrql.where().isEmpty())
+        if (jrqlUpdate.delete().isPresent() && !jrqlUpdate.insert().isPresent() && jrqlUpdate.where().isEmpty())
         {
             // DELETE WHERE {}
             insert = null;
@@ -49,8 +51,8 @@ public class JsonRqlJenaUpdateBuilder extends JsonRqlJenaBuilder<UpdateRequest>
             update = updateModify;
         }
 
-        jrql.delete().ifPresent(subjects -> accTriples(subjects, delete));
-        jrql.insert().ifPresent(subjects -> accTriples(subjects, insert));
+        jrqlUpdate.delete().ifPresent(subjects -> accTriples(subjects, delete));
+        jrqlUpdate.insert().ifPresent(subjects -> accTriples(subjects, insert));
 
         updateRequest.add(update);
         return updateRequest;

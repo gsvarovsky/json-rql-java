@@ -25,7 +25,7 @@ import static org.jsonrql.jsonld.JsonLd.asJsonLd;
 
 public abstract class JsonRqlJenaBuilder<T>
 {
-    protected final Query jrql;
+    protected final Query<?> jrql;
     protected final PrefixMapping prefixes;
     protected final Map<String, Object> ctx;
 

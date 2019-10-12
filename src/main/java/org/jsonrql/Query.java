@@ -5,217 +5,36 @@
 
 package org.jsonrql;
 
-import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import static com.fasterxml.jackson.annotation.JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY;
 import static com.fasterxml.jackson.annotation.JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED;
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.toList;
 
-/**
- * TODO: Separate SPARQL query forms from SPARQL update forms
- */
-@SuppressWarnings("unused")
-@JsonDeserialize
-public final class Query extends Pattern
+public abstract class Query<T extends Query> extends Pattern
 {
-    private final List<Result> select;
-    private final List<Result> distinct;
-    private final List<Id> describe;
-    private final List<Subject> construct;
-    private final List<Subject> insert;
-    private final List<Subject> delete;
-    private final List<Pattern> where;
-    private final List<Expression> orderBy;
-    private final Integer limit, offset;
+    protected final List<Pattern> where;
 
-    @Override public Query context(Context context)
+    @Override public T context(Context context)
     {
-        return new Query(context, select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
+        return copyWith(context, where);
     }
 
-    public static Query select(Result... select)
-    {
-        return select(asList(select));
-    }
-
-    public static Query select(List<Result> select)
-    {
-        return new Query(null, select, null, null, null, null, null, emptyList(), null, null, null);
-    }
-
-    public static Query select(String... select)
-    {
-        return select(stream(select).map(Result::result).collect(toList()));
-    }
-
-    @JsonIgnore
-    public Optional<List<Result>> select()
-    {
-        return Optional.ofNullable(select);
-    }
-
-    public static Query distinct(Result... distinct)
-    {
-        return distinct(asList(distinct));
-    }
-
-    public static Query distinct(List<Result> distinct)
-    {
-        return new Query(null, null, distinct, null, null, null, null, emptyList(), null, null, null);
-    }
-
-    public static Query distinct(String... distinct)
-    {
-        return distinct(stream(distinct).map(Result::result).collect(toList()));
-    }
-
-    @JsonIgnore
-    public Optional<List<Result>> distinct()
-    {
-        return Optional.ofNullable(distinct);
-    }
-
-    public static Query describe(Id... describe)
-    {
-        return new Query(null, null, null, asList(describe), null, null, null, emptyList(), null, null, null);
-    }
-
-    public static Query describe(String... describe)
-    {
-        return describe(stream(describe).map(Id::id).toArray(Id[]::new));
-    }
-
-    @JsonIgnore
-    public Optional<List<Id>> describe()
-    {
-        return Optional.ofNullable(describe);
-    }
-
-    public static Query construct(Subject... construct)
-    {
-        return construct(asList(construct));
-    }
-
-    public static Query construct(List<Subject> construct)
-    {
-        return new Query(null, null, null, null, construct, null, null, emptyList(), null, null, null);
-    }
-
-    @JsonIgnore
-    public Optional<List<Subject>> construct()
-    {
-        return Optional.ofNullable(construct);
-    }
-
-    public static Query insert(Subject... insert)
-    {
-        return insert(asList(insert));
-    }
-
-    public static Query insert(List<Subject> insert)
-    {
-        return new Query(null, null, null, null, null, insert, null, emptyList(), null, null, null);
-    }
-
-    @JsonIgnore
-    public Optional<List<Subject>> insert()
-    {
-        return Optional.ofNullable(insert);
-    }
-
-    public Query andInsert(Subject... insert)
-    {
-        final List<Subject> newInsert = this.insert == null ? new ArrayList<>() : new ArrayList<>(this.insert);
-        newInsert.addAll(asList(insert));
-        return new Query(context, select, distinct, describe, construct, newInsert, delete, where, orderBy, limit, offset);
-    }
-
-    public static Query delete(Subject... delete)
-    {
-        return delete(asList(delete));
-    }
-
-    public static Query delete(List<Subject> delete)
-    {
-        return new Query(null, null, null, null, null, null, delete, emptyList(), null, null, null);
-    }
-
-    public Query andDelete(Subject... delete)
-    {
-        final List<Subject> newDelete = this.delete == null ? new ArrayList<>() : new ArrayList<>(this.delete);
-        newDelete.addAll(asList(delete));
-        return new Query(context, select, distinct, describe, construct, insert, newDelete, where, orderBy, limit, offset);
-    }
-
-    @JsonIgnore
-    public Optional<List<Subject>> delete()
-    {
-        return Optional.ofNullable(delete);
-    }
-
-    public Query where(Pattern... where)
+    public T where(Pattern... where)
     {
         return where(asList(where));
     }
 
-    public Query where(List<Pattern> where)
+    public T where(List<Pattern> where)
     {
         final List<Pattern> newWhere = new ArrayList<>(this.where);
         newWhere.addAll(where);
-        return new Query(context, select, distinct, describe, construct, insert, delete, newWhere, orderBy, limit, offset);
-    }
-
-    @JsonIgnore
-    public Optional<List<Expression>> orderBy()
-    {
-        return Optional.ofNullable(orderBy);
-    }
-
-    public Query orderBy(Expression... orderBy)
-    {
-        return orderBy(asList(orderBy));
-    }
-
-    public Query orderBy(List<Expression> orderBy)
-    {
-        return new Query(context, select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
-    }
-
-    public Query orderBy(String... orderBy)
-    {
-        return orderBy(stream(orderBy).map(Expression::expression).collect(toList()));
-    }
-
-    @JsonIgnore
-    public Optional<Integer> limit()
-    {
-        return Optional.ofNullable(limit);
-    }
-
-    public Query limit(int limit)
-    {
-        return new Query(context, select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
-    }
-
-    @JsonIgnore
-    public Optional<Integer> offset()
-    {
-        return Optional.ofNullable(offset);
-    }
-
-    public Query offset(int offset)
-    {
-        return new Query(context, select, distinct, describe, construct, insert, delete, where, orderBy, limit, offset);
+        return copyWith(context, newWhere);
     }
 
     @JsonProperty("@where")
@@ -225,115 +44,28 @@ public final class Query extends Pattern
         return where;
     }
 
-    @Override
-    public void accept(Visitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    @JsonCreator
-    private Query(
-        @JsonProperty("@context") Context context,
-        @JsonProperty("@select") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Result> select,
-        @JsonProperty("@distinct") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Result> distinct,
-        @JsonProperty("@describe") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Id> describe,
-        @JsonProperty("@construct") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Subject> construct,
-        @JsonProperty("@insert") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Subject> insert,
-        @JsonProperty("@delete") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Subject> delete,
-        @JsonProperty(value = "@where", required = true) @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Pattern> where,
-        @JsonProperty("@orderBy") @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY) List<Expression> orderBy,
-        @JsonProperty("@limit") Integer limit,
-        @JsonProperty("@offset") Integer offset)
+    protected Query(Context context, List<Pattern> where)
     {
         super(context);
-        this.select = select == null ? null : unmodifiableList(select);
-        this.distinct = distinct == null ? null : unmodifiableList(distinct);
-        this.describe = describe == null ? null : unmodifiableList(describe);
-        this.construct = construct == null ? null : unmodifiableList(construct);
-        this.insert = insert == null ? null : unmodifiableList(insert);
-        this.delete = delete == null ? null : unmodifiableList(delete);
         this.where = unmodifiableList(where);
-        this.orderBy = orderBy;
-        this.limit = limit;
-        this.offset = offset;
     }
 
-    @SuppressWarnings("unused")
-    @JsonProperty("@select")
-    @JsonFormat(with = WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
-    @JsonInclude(NON_NULL)
-    private List<Result> getSelect()
-    {
-        return select;
-    }
+    protected abstract T copyWith(Context context, List<Pattern> where);
 
-    @SuppressWarnings("unused")
-    @JsonProperty("@distinct")
-    @JsonFormat(with = WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
-    @JsonInclude(NON_NULL)
-    private List<Result> getDistinct()
+    static Class<? extends Query> decideType(JsonNode node)
     {
-        return distinct;
-    }
-
-    @SuppressWarnings("unused")
-    @JsonProperty("@describe")
-    @JsonFormat(with = WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
-    @JsonInclude(NON_NULL)
-    private List<Id> getDescribe()
-    {
-        return describe;
-    }
-
-    @SuppressWarnings("unused")
-    @JsonProperty("@construct")
-    @JsonFormat(with = WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
-    @JsonInclude(NON_NULL)
-    private List<Subject> getConstruct()
-    {
-        return construct;
-    }
-
-    @SuppressWarnings("unused")
-    @JsonProperty("@insert")
-    @JsonFormat(with = WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
-    @JsonInclude(NON_NULL)
-    private List<Subject> getInsert()
-    {
-        return insert;
-    }
-
-    @SuppressWarnings("unused")
-    @JsonProperty("@delete")
-    @JsonFormat(with = WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
-    @JsonInclude(NON_NULL)
-    private List<Subject> getDelete()
-    {
-        return delete;
-    }
-
-    @SuppressWarnings("unused")
-    @JsonProperty("@orderBy")
-    @JsonFormat(with = WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
-    @JsonInclude(NON_NULL)
-    private List<Expression> getOrderBy()
-    {
-        return orderBy;
-    }
-
-    @SuppressWarnings("unused")
-    @JsonProperty("@limit")
-    @JsonInclude(NON_NULL)
-    private Integer getLimit()
-    {
-        return limit;
-    }
-
-    @SuppressWarnings("unused")
-    @JsonProperty("@offset")
-    @JsonInclude(NON_NULL)
-    private Integer getOffset()
-    {
-        return offset;
+        if (node.has("@select"))
+            return Select.class;
+        else if (node.has("@distinct"))
+            return Distinct.class;
+        else if (node.has("@describe"))
+            return Describe.class;
+        else if (node.has("@construct"))
+            return Construct.class;
+        else if (node.has("@insert") || node.has("@delete"))
+            return Update.class;
+        else
+            throw new IllegalArgumentException(
+                "Expected one of [@select, @distinct, @describe, @construct, @insert, @delete]");
     }
 }

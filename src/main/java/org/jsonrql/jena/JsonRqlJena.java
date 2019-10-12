@@ -29,12 +29,12 @@ import static org.jsonrql.jsonld.JsonLd.unhide;
 
 public interface JsonRqlJena
 {
-    static Query asSparqlQuery(org.jsonrql.Query jrql)
+    static Query asSparql(org.jsonrql.Read jrql)
     {
         return new JsonRqlJenaQueryBuilder(jrql).build();
     }
 
-    static UpdateRequest asSparqlUpdate(org.jsonrql.Query jrql)
+    static UpdateRequest asSparql(org.jsonrql.Update jrql)
     {
         return new JsonRqlJenaUpdateBuilder(jrql).build();
     }

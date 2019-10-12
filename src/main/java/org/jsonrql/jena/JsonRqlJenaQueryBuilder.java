@@ -26,22 +26,30 @@ public class JsonRqlJenaQueryBuilder extends JsonRqlJenaBuilder<Query>
 {
     private final Query query = QueryFactory.create();
 
-    JsonRqlJenaQueryBuilder(org.jsonrql.Query jrql)
+    private final Read<?> readQuery;
+
+    JsonRqlJenaQueryBuilder(org.jsonrql.Read readQuery)
     {
-        super(jrql);
+        super(readQuery);
+        this.readQuery = readQuery;
     }
 
     @Override public Query build()
     {
-        jrql.select().ifPresent(this::addSelectResults);
-        jrql.distinct().ifPresent(this::addDistinctResults);
-        jrql.construct().ifPresent(this::addConstruct);
-        jrql.describe().ifPresent(this::addDescribe);
+        if (readQuery instanceof Select)
+            this.addSelectResults(((Select)readQuery).select());
+        else if (readQuery instanceof Distinct)
+            addDistinctResults(((Distinct)readQuery).distinct());
+        else if (readQuery instanceof Construct)
+            addConstruct(((Construct)readQuery).construct());
+        else if (readQuery instanceof Describe)
+            addDescribe(((Describe)readQuery).describe());
+
         // A query must always have an element group at the top level
         whereElement(true).ifPresent(query::setQueryPattern);
-        jrql.orderBy().ifPresent(this::setOrderBy);
-        jrql.limit().ifPresent(query::setLimit);
-        jrql.offset().ifPresent(query::setOffset);
+        readQuery.orderBy().ifPresent(this::setOrderBy);
+        readQuery.limit().ifPresent(query::setLimit);
+        readQuery.offset().ifPresent(query::setOffset);
         return query;
     }
 

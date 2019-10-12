@@ -67,7 +67,7 @@ public abstract class Pattern implements Jrql
                 case START_OBJECT:
                     // Unfortunately we need to read ahead to decide on the target type
                     return readAhead(p, ctxt, node ->
-                        fieldsOf(node).anyMatch(KEYWORDS.clauses::containsKey) ? Query.class
+                        fieldsOf(node).anyMatch(KEYWORDS.clauses::containsKey) ? Query.decideType(node)
                             : fieldsOf(node).anyMatch(KEYWORDS.groupPatterns::containsKey) ? Group.class
                             : Subject.class);
 
