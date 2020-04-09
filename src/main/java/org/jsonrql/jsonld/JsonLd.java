@@ -1,5 +1,5 @@
 /*
- * Copyright (c) George Svarovsky 2019. All rights reserved.
+ * Copyright (c) George Svarovsky 2020. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for full license information.
  */
 
@@ -14,6 +14,7 @@ import java.util.Map;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 
+@SuppressWarnings("rawtypes")
 public interface JsonLd
 {
     String HIDDEN_VAR_PREFIX = "http://json-rql.org/var#";
@@ -107,6 +108,9 @@ public interface JsonLd
     {
         if (strict && group.filter().isPresent())
             throw new IllegalArgumentException("Filter found in conversion to JSON-LD");
+
+        if (strict && group.union().isPresent())
+            throw new IllegalArgumentException("Union found in conversion to JSON-LD");
 
         return group.graph().map(
             graph -> singletonMap("@graph", graph.stream()

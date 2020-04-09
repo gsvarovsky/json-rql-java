@@ -1,5 +1,5 @@
 /*
- * Copyright (c) George Svarovsky 2019. All rights reserved.
+ * Copyright (c) George Svarovsky 2020. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for full license information.
  */
 
@@ -46,8 +46,10 @@ public class JsonRqlJenaUpdateBuilder extends JsonRqlJenaBuilder<UpdateRequest>
             // DELETE {} INSERT {} WHERE {}
             final UpdateModify updateModify = new UpdateModify();
             insert = updateModify.getInsertAcc();
+            updateModify.setHasInsertClause(jrqlUpdate.insert().isPresent());
             delete = updateModify.getDeleteAcc();
-            whereElement(false).ifPresent(updateModify::setElement);
+            updateModify.setHasDeleteClause(jrqlUpdate.delete().isPresent());
+            whereElement().ifPresent(updateModify::setElement);
             update = updateModify;
         }
 

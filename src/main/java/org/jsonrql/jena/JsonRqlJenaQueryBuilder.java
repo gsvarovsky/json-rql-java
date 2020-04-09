@@ -1,5 +1,5 @@
 /*
- * Copyright (c) George Svarovsky 2019. All rights reserved.
+ * Copyright (c) George Svarovsky 2020. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for full license information.
  */
 
@@ -28,7 +28,7 @@ public class JsonRqlJenaQueryBuilder extends JsonRqlJenaBuilder<Query>
 
     private final Read<?> readQuery;
 
-    JsonRqlJenaQueryBuilder(org.jsonrql.Read readQuery)
+    JsonRqlJenaQueryBuilder(org.jsonrql.Read<?> readQuery)
     {
         super(readQuery);
         this.readQuery = readQuery;
@@ -46,7 +46,7 @@ public class JsonRqlJenaQueryBuilder extends JsonRqlJenaBuilder<Query>
             addDescribe(((Describe)readQuery).describe());
 
         // A query must always have an element group at the top level
-        whereElement(true).ifPresent(query::setQueryPattern);
+        whereElement().ifPresent(query::setQueryPattern);
         readQuery.orderBy().ifPresent(this::setOrderBy);
         readQuery.limit().ifPresent(query::setLimit);
         readQuery.offset().ifPresent(query::setOffset);

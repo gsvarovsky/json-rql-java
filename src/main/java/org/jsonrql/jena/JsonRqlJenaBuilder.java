@@ -1,5 +1,5 @@
 /*
- * Copyright (c) George Svarovsky 2019. All rights reserved.
+ * Copyright (c) George Svarovsky 2020. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for full license information.
  */
 
@@ -7,10 +7,7 @@ package org.jsonrql.jena;
 
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.sse.SSE;
-import org.apache.jena.sparql.syntax.Element;
-import org.apache.jena.sparql.syntax.ElementFilter;
-import org.apache.jena.sparql.syntax.ElementGroup;
-import org.apache.jena.sparql.syntax.ElementPathBlock;
+import org.apache.jena.sparql.syntax.*;
 import org.jsonrql.*;
 
 import java.util.Map;
@@ -29,7 +26,7 @@ public abstract class JsonRqlJenaBuilder<T>
     protected final PrefixMapping prefixes;
     protected final Map<String, Object> ctx;
 
-    JsonRqlJenaBuilder(Query jrql)
+    JsonRqlJenaBuilder(Query<?> jrql)
     {
         this.jrql = jrql;
         this.ctx = asJsonLd(jrql.context());
@@ -38,24 +35,38 @@ public abstract class JsonRqlJenaBuilder<T>
 
     abstract T build();
 
-    Optional<Element> whereElement(boolean alwaysGroup)
+    Optional<Element> whereElement()
     {
         final ElementGroup group = new ElementGroup();
         jrql.where().forEach(pattern -> addWhereTo(pattern, group));
-        return group.isEmpty() ? Optional.empty() : Optional.of(group.size() > 1 || alwaysGroup ? group : group.getLast());
+        return group.isEmpty() ? Optional.empty() : Optional.of(group);
     }
 
-    private void addWhereTo(Pattern pattern, ElementGroup group)
+    private void addWhereTo(Pattern pattern, ElementGroup elementGroup)
     {
         pattern.accept(new Jrql.Visitor()
         {
-            @Override
-            public void visit(Subject subject)
+            @Override public void visit(Subject subject)
             {
-                group.addElement(new ElementPathBlock(asPattern(asGraph(subject), ctx)));
+                elementGroup.addElement(new ElementPathBlock(asPattern(asGraph(subject), ctx)));
 
                 // Pull out any in-line filters recursively
                 subject.values().forEach(this::extractFilters);
+            }
+
+            @Override public void visit(Group group)
+            {
+                group.graph().ifPresent(graph -> graph.forEach(this::visit));
+                group.union().ifPresent(union -> {
+                    final ElementUnion elementUnion = new ElementUnion();
+                    union.forEach(pattern -> {
+                        final ElementGroup subGroup = new ElementGroup();
+                        addWhereTo(pattern, subGroup);
+                        if (!subGroup.isEmpty())
+                            elementUnion.addElement(subGroup);
+                    });
+                    elementGroup.addElement(elementUnion);
+                });
             }
 
             // Mysteriously, this method cannot be in-lined due to an IllegalAccessError in the hotspot compiler
@@ -80,7 +91,7 @@ public abstract class JsonRqlJenaBuilder<T>
                                                  // TODO: This will probably break with @in
                                                  opRhs.getValue().stream()
                                                      .map(JsonRqlJena::asExpr).collect(joining(" "))))
-                            .forEach(expr -> group.addElement(new ElementFilter(SSE.parseExpr(expr, prefixes))));
+                            .forEach(expr -> elementGroup.addElement(new ElementFilter(SSE.parseExpr(expr, prefixes))));
                     }
                 });
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) George Svarovsky 2019. All rights reserved.
+ * Copyright (c) George Svarovsky 2020. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for full license information.
  */
 
@@ -14,9 +14,11 @@ import static org.jsonrql.Construct.construct;
 import static org.jsonrql.Context.context;
 import static org.jsonrql.Describe.describe;
 import static org.jsonrql.Distinct.distinct;
+import static org.jsonrql.Group.union;
 import static org.jsonrql.Id.id;
 import static org.jsonrql.InlineFilter.filter;
 import static org.jsonrql.Literal.literal;
+import static org.jsonrql.Name.name;
 import static org.jsonrql.Result.STAR;
 import static org.jsonrql.Select.select;
 import static org.jsonrql.Subject.subject;
@@ -24,6 +26,7 @@ import static org.jsonrql.Update.delete;
 import static org.jsonrql.Variable.var;
 import static org.jsonrql.jena.JsonRqlJena.asSparql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JsonRqlJenaTest
 {
@@ -47,14 +50,23 @@ class JsonRqlJenaTest
 
     @Test void testDeleteNameOnly()
     {
-        assertEquals(UpdateFactory.create("DELETE WHERE {}").toString(),
-                     asSparql(delete(subject("meld:fred"))).toString());
+        assertTrue(UpdateFactory.create("DELETE WHERE {}")
+                       .equalTo(asSparql(delete(subject("meld:fred")))));
     }
 
     @Test void testDeleteSubject()
     {
-        assertEquals(UpdateFactory.create("DELETE WHERE {<meld:fred> ?p ?o}").toString(),
-                     asSparql(delete(subject("meld:fred").with(var("p"), var("o")))).toString());
+        assertTrue(UpdateFactory.create("DELETE WHERE {<meld:fred> ?p ?o}")
+                       .equalTo(asSparql(delete(subject("meld:fred").with(var("p"), var("o"))))));
+    }
+
+    @Test void testDeleteSubjectOrObject()
+    {
+        final Subject one = subject("meld:fred").with(var("p1"), var("o"));
+        final Subject two = subject(var("s")).with(var("p2"), name("meld:fred"));
+        assertTrue(UpdateFactory.create("DELETE {<meld:fred> ?p1 ?o. ?s ?p2 <meld:fred>} " +
+                                            "WHERE {{<meld:fred> ?p1 ?o} UNION {?s ?p2 <meld:fred>}}")
+                       .equalTo(asSparql(delete(one, two).where(union(one, two)))));
     }
 
     @Test void testExample()
