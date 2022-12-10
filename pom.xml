@@ -14,6 +14,12 @@
     <version>0.2.2</version>
     <packaging>jar</packaging>
 
+    <scm>
+        <connection>scm:git:https://github.com/gsvarovsky/json-rql.git</connection>
+        <developerConnection>scm:git:https://github.com/gsvarovsky/json-rql.git</developerConnection>
+        <url>https://github.com/gsvarovsky/json-rql</url>
+    </scm>
+
     <properties>
         <json-rql.version>0.3.2</json-rql.version>
         <junit-jupiter-api.version>5.0.2</junit-jupiter-api.version>
@@ -60,34 +66,33 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>com.googlecode.maven-download-plugin</groupId>
-                <artifactId>download-maven-plugin</artifactId>
-                <version>1.4.0</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-plugin</artifactId>
+                <version>2.0.0-M3</version>
                 <executions>
                     <execution>
-                        <id>get-json-rql</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>https://github.com/gsvarovsky/json-rql/archive/v${json-rql.version}.zip</url>
-                            <unpack>true</unpack>
-                            <outputDirectory>${project.basedir}/src/test/resources</outputDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>get-keywords</id>
+                        <id>download-test-data</id>
                         <phase>generate-resources</phase>
                         <goals>
-                            <goal>wget</goal>
+                            <goal>checkout</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/gsvarovsky/json-rql/v${json-rql.version}/lib/keywords.json</url>
-                            <outputDirectory>${project.basedir}/src/main/resources/org/jsonrql</outputDirectory>
+                            <includes>test/data/**</includes>
+                            <checkoutDirectory>target/test-cases</checkoutDirectory>
+                            <skipCheckoutIfExists>true</skipCheckoutIfExists>
+                            <providerImplementations>
+                                <git>jgit</git>
+                            </providerImplementations>
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.scm</groupId>
+                        <artifactId>maven-scm-provider-jgit</artifactId>
+                        <version>2.0.0-M3</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
