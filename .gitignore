@@ -36,8 +36,9 @@ buildNumber.properties
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
 
-# IntelliJ project file
+# IntelliJ files
 json-rql-java.iml
+.idea
 
 # json-rql resources (downloaded from GitHub)
 src/test/resources/json-rql-*

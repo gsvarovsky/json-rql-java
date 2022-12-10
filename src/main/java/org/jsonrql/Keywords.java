@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Map;
 
 import static java.util.Collections.unmodifiableMap;
@@ -22,7 +23,8 @@ public final class Keywords
     {
         try
         {
-            KEYWORDS = new ObjectMapper().readValue(Keywords.class.getResource("keywords.json"), Keywords.class);
+            final URL resource = Keywords.class.getClassLoader().getResource("keywords.json");
+            KEYWORDS = new ObjectMapper().readValue(resource, Keywords.class);
         }
         catch (IOException e)
         {

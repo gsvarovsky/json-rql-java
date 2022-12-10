@@ -10,9 +10,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.lang.String.format;
@@ -38,9 +42,13 @@ class QueryTest
     {
         @SuppressWarnings("unchecked") final Set<String> testNames =
             objectMapper.readValue(QueryTest.class.getResource("testcases.json"), Set.class);
-        return testNames.stream().map(
-            tc -> QueryTest.class.getResource(format("/json-rql-%s/test/data/%s.json",
-                                                     System.getProperty("json-rql.version"),
-                                                     tc)));
+        return testNames.stream()
+                .map(tc -> {
+                    try {
+                        return new File(format("target/test-cases/test/data/%s.json", tc)).toURI().toURL();
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 }
