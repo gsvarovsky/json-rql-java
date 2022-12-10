@@ -23,7 +23,7 @@ public final class Keywords
     {
         try
         {
-            URL resource = Keywords.class.getClassLoader().getResource("keywords.json");
+            final URL resource = Keywords.class.getClassLoader().getResource("keywords.json");
             KEYWORDS = new ObjectMapper().readValue(resource, Keywords.class);
         }
         catch (IOException e)
