@@ -22,20 +22,26 @@
 
     <properties>
         <json-rql.version>0.3.2</json-rql.version>
-        <junit-jupiter-api.version>5.0.2</junit-jupiter-api.version>
-        <jena.version>3.12.0</jena.version>
+        <junit-jupiter-api.version>5.6.3</junit-jupiter-api.version>
+        <jena.version>3.17.0</jena.version>
+        <jackson.version>2.14.1</jackson.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.github.jsonld-java</groupId>
             <artifactId>jsonld-java</artifactId>
-            <version>0.13.0</version>
+            <version>0.13.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId> <!-- for com.fasterxml.jackson.core.JacksonException -->
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.10.2</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jena</groupId>
@@ -43,6 +49,7 @@
             <version>${jena.version}</version>
             <optional>true</optional>
         </dependency>
+        <!-- test dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -58,7 +65,7 @@
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
-            <version>0.9.11</version>
+            <version>0.10.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
