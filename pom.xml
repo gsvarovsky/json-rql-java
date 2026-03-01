@@ -25,7 +25,7 @@
         <json-rql.version>0.3.2</json-rql.version>
         <junit-jupiter-api.version>5.6.3</junit-jupiter-api.version>
         <jena.version>3.17.0</jena.version>
-        <jackson.version>2.14.1</jackson.version>
+        <jackson.version>2.18.6</jackson.version>
     </properties>
 
     <dependencies>
